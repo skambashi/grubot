@@ -365,8 +365,11 @@ function receivedPostback(event) {
 // TODO: store users in database
 function registerUser(uid) {
   Users.add_user(uid);
-  console.log("[NEW_USER] Registered new user %d via Welcome Screen. " +
-    "Registered user count: %d", uid, users.length);
+  console.log("[REGISTER_USER] Registered new user %d via Welcome Screen. ", uid);
+  Users.count(function(count) {
+    console.log("[REGISTER_USER] Registered user count: %d.", count);
+  });
+
 }
 
 /*
