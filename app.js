@@ -337,8 +337,9 @@ function receivedPostback(event) {
 
   if (payload === "NEW_USER") {
     registerUser(senderID);
-    sendTextMessage(senderID, "Hi! I'm Grubot - I can help you create polls, " +
-      "pin messages, and upload files. What would you like to do?");
+    sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
+      "I can help you create polls, pin messages, and upload files. What can " +
+      "I do for you?");
   } else {
     console.log("Received postback for user %d and page %d with payload '%s' " +
       "at %d", senderID, recipientID, payload, timeOfPostback);
