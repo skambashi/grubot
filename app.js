@@ -334,21 +334,25 @@ function receivedPostback(event) {
   // button for Structured Messages.
   var payload = event.postback.payload;
 
-  console.log("Received postback for user %d and page %d with payload '%s' " +
-    "at %d", senderID, recipientID, payload, timeOfPostback);
 
   if (payload === "NEW_USER") {
     registerUser(senderID);
+    sendTextMessage(senderID, "Hi! I'm Grubot - I can help you create polls, " +
+      "pin messages, and upload files. What would you like to do?");
+  } else {
+    console.log("Received postback for user %d and page %d with payload '%s' " +
+      "at %d", senderID, recipientID, payload, timeOfPostback);
+    // When a postback is called, we'll send a message back to the sender to
+    // let them know it was successful
+    sendTextMessage(senderID, "Postback called");
   }
-  // When a postback is called, we'll send a message back to the sender to
-  // let them know it was successful
-  sendTextMessage(senderID, "Postback called");
 }
 
 // TODO: store users in database
 function registerUser(uid) {
   users.push(uid);
-  console.log("[NEW_USER] Registered new user %d. Registed users: %d", uid, users.length);
+  console.log("[NEW_USER] Registered new user %d via Welcome Screen. " +
+    "Registered user count: %d", uid, users.length);
 }
 
 /*
