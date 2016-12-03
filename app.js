@@ -18,6 +18,7 @@ app.set('port', process.env.PORT || 5000);
 app.set('view engine', 'ejs');
 app.use(bodyParser.json({ verify: verifyRequestSignature }));
 app.use(express.static('public'));
+var users = [];
 
 //==============================================================================
 // CONFIG VALUES
@@ -322,6 +323,7 @@ function receivedDeliveryConfirmation(event) {
  * This event is called when a postback is tapped on a Structured Message.
  * https://developers.facebook.com/docs/messenger-platform/webhook-reference/postback-received
  *
+ * This event is also called when Get Started is clicked.
  */
 function receivedPostback(event) {
   var senderID = event.sender.id;
@@ -335,9 +337,18 @@ function receivedPostback(event) {
   console.log("Received postback for user %d and page %d with payload '%s' " +
     "at %d", senderID, recipientID, payload, timeOfPostback);
 
+  if (payload === "NEW_USER") {
+    registerUser(senderID);
+  }
   // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
   sendTextMessage(senderID, "Postback called");
+}
+
+// TODO: store users in database
+function registerUser(uid) {
+  users.push(uid);
+  console.log("[NEW_USER] Registered new user %d. Registed users: %d", uid, users.length);
 }
 
 /*
