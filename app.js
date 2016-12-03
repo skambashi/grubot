@@ -309,11 +309,11 @@ function receivedDeliveryConfirmation(event) {
   if (messageIDs) {
     messageIDs.forEach(function(messageID) {
       // Received delivery confirmation for message ID: messageID
-      console.log("[MESSAGE_DELIVERED] MID: %s", messageID);
+      console.log("[DELIVERED_MESSAGE] MID: %s", messageID);
     });
   }
 
-  console.log("[MESSAGE_DELIVERED] All message before %d were delivered.", watermark);
+  console.log("[DELIVERED_MESSAGE] All message before %d were delivered.", watermark);
 }
 
 /*
@@ -355,8 +355,8 @@ function receivedMessageRead(event) {
   var watermark = event.read.watermark;
   var sequenceNumber = event.read.seq;
 
-  console.log("Received message read event for watermark %d and sequence " +
-    "number %d", watermark, sequenceNumber);
+  // Received message read event for watermark: watermark and sequence number: sequenceNumber
+  console.log("[MESSAGE_READ] WATERMARK: %d | SEQ_NUM: %d", watermark, sequenceNumber);
 }
 
 /*
