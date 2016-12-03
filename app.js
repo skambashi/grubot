@@ -13,7 +13,15 @@ const
   https = require('https'),
   request = require('request');
 
+var app = express();
+app.set('port', process.env.PORT || 5000);
+app.set('view engine', 'ejs');
+app.use(bodyParser.json({ verify: verifyRequestSignature }));
+app.use(express.static('public'));
 
+//==============================================================================
+// DATABASE
+//==============================================================================
 var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGODB_URI);
 var db = mongoose.connection;
@@ -23,12 +31,7 @@ db.once('open', function() {
   console.log("[DB] Successfully connected to database.");
 });
 
-var app = express();
-app.set('port', process.env.PORT || 5000);
-app.set('view engine', 'ejs');
-app.use(bodyParser.json({ verify: verifyRequestSignature }));
-app.use(express.static('public'));
-var users = [];
+var Users = require('./models/user.js');
 
 //==============================================================================
 // CONFIG VALUES
@@ -361,7 +364,7 @@ function receivedPostback(event) {
 
 // TODO: store users in database
 function registerUser(uid) {
-  users.push(uid);
+  Users.add_user(uid);
   console.log("[NEW_USER] Registered new user %d via Welcome Screen. " +
     "Registered user count: %d", uid, users.length);
 }
