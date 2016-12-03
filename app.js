@@ -300,7 +300,7 @@ function receivedMessage(event) {
 
       default:
         // sendTextMessage(senderID, messageText);
-        sendTextMessageChannel(senderID, messageText);
+        sendTextMessageChannel(senderID, senderID + ": " + messageText);
     }
   } else if (messageAttachments) {
     sendTextMessage(senderID, "Message with attachment received");
