@@ -12,10 +12,11 @@ exports.add_user = function(user_id) {
 };
 
 exports.remove_user = function(user_id) {
-  User.find({ id: user_id }, function(err, users) {
+  console.log("[DB] Attempting to remove user with ID: " + user_id);
+  User.remove({ id: user_id }, function(err) {
     if (err) { return console.error(err); }
-    console.log("[DB] Deleted user with ID: " + user_id);
-  }).remove().exec();
+    console.log("[DB] Successfully removed user");
+  });
 };
 
 exports.get_all_users = function(callback) {

@@ -894,7 +894,6 @@ function callSendAPI(messageData) {
       }
     } else {
       // clean up users that have deleted bot's convo
-      console.log("[DEBUG]", body.error.error_subcode);
       if (body.error.error_subcode === MESSAGE_NOT_SENT) {
         Users.remove_user(body.recipient_id);
       }
