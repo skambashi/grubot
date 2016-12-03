@@ -13,6 +13,16 @@ const
   https = require('https'),
   request = require('request');
 
+
+var mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, '[DB] connection error:'));
+db.once('open', function() {
+  // we're connected!
+  console.log("[DB] Successfully connected to database.");
+});
+
 var app = express();
 app.set('port', process.env.PORT || 5000);
 app.set('view engine', 'ejs');
