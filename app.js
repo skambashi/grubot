@@ -13,6 +13,9 @@ const
   https = require('https'),
   request = require('request');
 
+// Send API error codes: https://developers.facebook.com/docs/messenger-platform/send-api-reference
+const MESSAGE_NOT_SENT = 1545041;
+
 var app = express();
 app.set('port', process.env.PORT || 5000);
 app.set('view engine', 'ejs');
@@ -890,6 +893,11 @@ function callSendAPI(messageData) {
         console.log("[SEND_API] USER_ID: %s", recipientId);
       }
     } else {
+      // clean up users that have deleted bot's convo
+      console.log("[DEBUG]", body.error.error_subcode);
+      if (body.error.error_subcode === MESSAGE_NOT_SENT) {
+        Users.remove_user(body.recipient_id);
+      }
       console.error("[SEND_API|ERROR] Failed calling Send API", response.statusCode, response.statusMessage, body.error);
     }
   });

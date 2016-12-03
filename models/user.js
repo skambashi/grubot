@@ -11,6 +11,13 @@ exports.add_user = function(user_id) {
   });
 };
 
+exports.remove_user = function(user_id) {
+  User.find({ id: user_id }, function(err, users) {
+    if (err) { return console.error(err); }
+    console.log("[DB] Deleted user with ID: " + user_id);
+  }).remove().exec();
+};
+
 exports.get_all_users = function(callback) {
   User.find(function (err, users) {
     if (err) { return console.error(err); }
