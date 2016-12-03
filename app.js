@@ -23,6 +23,7 @@ app.use(express.static('public'));
 // DATABASE
 //==============================================================================
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, '[DB] connection error:'));
@@ -298,7 +299,8 @@ function receivedMessage(event) {
         break;
 
       default:
-        sendTextMessage(senderID, messageText);
+        // sendTextMessage(senderID, messageText);
+        sendTextMessageChannel(senderID, messageText);
     }
   } else if (messageAttachments) {
     sendTextMessage(senderID, "Message with attachment received");
@@ -350,9 +352,10 @@ function receivedPostback(event) {
 
   if (payload === "NEW_USER") {
     registerUser(senderID);
+    // TODO: GET THE USERS NAME
     sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
-      "I can help you create polls, pin messages, and upload files. What can " +
-      "I do for you?");
+      "What can I do for you?");
+    sendTextMessageChannel(senderID, senderID + " has joined!");
   } else {
     console.log("Received postback for user %d and page %d with payload '%s' " +
       "at %d", senderID, recipientID, payload, timeOfPostback);
@@ -362,13 +365,15 @@ function receivedPostback(event) {
   }
 }
 
-// TODO: store users in database
 function registerUser(uid) {
   Users.add_user(uid);
   console.log("[REGISTER_USER] Registered new user %d via Welcome Screen. ", uid);
-  Users.count(function(count) {
-    console.log("[REGISTER_USER] Registered user count: %d.", count);
-  });
+
+  // TODO: Count isn't updated right away due to async push to mongodb.
+  // Need to wait a bit to call Users.count to get right number.
+  // Users.count(function(count) {
+  //   console.log("[REGISTER_USER] Registered user count: %d.", count);
+  // });
 
 }
 
@@ -442,6 +447,26 @@ function receivedAccountLink(event) {
 //==============================================================================
 // MESSAGE SENDING FUNCTIONS
 //==============================================================================
+/*
+ * Send a text message to all users in channel.
+ *
+ */
+function sendTextMessageChannel(senderID, messageText) {
+  Users.get_other_users(senderID, function(users) {
+    for (var i = 0; i < users.length; i++) {
+      var messageData = {
+        recipient: {
+          id: users[i].id
+        },
+        message: {
+          text: messageText,
+          metadata: "DEVELOPER_DEFINED_METADATA"
+        }
+      };
+      callSendAPI(messageData);
+    }
+  });
+}
 
 /*
  * Send a text message using the Send API.
