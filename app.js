@@ -282,7 +282,10 @@ function receivedMessage(event) {
             }
         }
       } else if (messageAttachments) { // IF NON-TEXT MESSAGE
-        sendTextMessageChannel(senderID, user.name + ": Message with attachment sent.");
+        sendTextMessageChannel(senderID, user.name + ":");
+        for (var i = 0; i < messageAttachments.length; i++) {
+            sendAttachmentMessageChannel(senderID, messageAttachments[i].type, messageAttachments[i].payload)
+        }
       }
     } else { // NO USER CASE
       if (messageText) { // IF TEXT MESSAGE
@@ -544,30 +547,6 @@ function receivedAccountLink(event) {
 // MESSAGE SENDING FUNCTIONS
 //==============================================================================
 /*
- * Send a text message to all users in channel.
- *
- */
-function sendTextMessageChannel(senderID, messageText) {
-  Users.get_other_users(senderID, function(err, users) {
-    if (err) { return console.error(err); }
-    if (users) {
-      for (var i = 0; i < users.length; i++) {
-        var messageData = {
-          recipient: {
-            id: users[i].id
-          },
-          message: {
-            text: messageText,
-            metadata: "DEVELOPER_DEFINED_METADATA"
-          }
-        };
-        callSendAPI(messageData);
-      }
-    }
-  });
-}
-
-/*
  * Send a text message using the Send API.
  *
  */
@@ -586,20 +565,33 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 /*
- * Send an image using the Send API.
+ * Send a text message to all users in channel.
  *
  */
-function sendImageMessage(recipientId) {
+function sendTextMessageChannel(senderID, messageText) {
+  Users.get_other_users(senderID, function(err, users) {
+    if (err) { return console.error(err); }
+    if (users) {
+      for (var i = 0; i < users.length; i++) {
+        sendTextMessage(users[i].id, messageText);
+      }
+    }
+  });
+}
+
+/*
+ * Send an attachment using the Send API.
+ *
+ */
+function sendAttachmentMessage(recipientId, msgType, msgPayload) {
   var messageData = {
     recipient: {
       id: recipientId
     },
     message: {
       attachment: {
-        type: "image",
-        payload: {
-          url: SERVER_URL + "/assets/rift.png"
-        }
+        type: msgType,
+        payload: msgPayload
       }
     }
   };
@@ -607,92 +599,15 @@ function sendImageMessage(recipientId) {
   callSendAPI(messageData);
 }
 
-/*
- * Send a Gif using the Send API.
- *
- */
-function sendGifMessage(recipientId) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "image",
-        payload: {
-          url: SERVER_URL + "/assets/instagram_logo.gif"
-        }
+function sendAttachmentMessageChannel(senderID, msgType, msgPayload) {
+  Users.get_other_users(senderID, function(err, users) {
+    if (err) { return console.error(err); }
+    if (users) {
+      for (var i = 0; i < users.length; i++) {
+        sendAttachmentMessage(users[i].id, msgType, msgPayload);
       }
     }
-  };
-
-  callSendAPI(messageData);
-}
-
-/*
- * Send audio using the Send API.
- *
- */
-function sendAudioMessage(recipientId) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "audio",
-        payload: {
-          url: SERVER_URL + "/assets/sample.mp3"
-        }
-      }
-    }
-  };
-
-  callSendAPI(messageData);
-}
-
-/*
- * Send a video using the Send API.
- *
- */
-function sendVideoMessage(recipientId) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "video",
-        payload: {
-          url: SERVER_URL + "/assets/allofus480.mov"
-        }
-      }
-    }
-  };
-
-  callSendAPI(messageData);
-}
-
-/*
- * Send a file using the Send API.
- *
- */
-function sendFileMessage(recipientId) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "file",
-        payload: {
-          url: SERVER_URL + "/assets/test.txt"
-        }
-      }
-    }
-  };
-
-  callSendAPI(messageData);
+  });
 }
 
 /*
