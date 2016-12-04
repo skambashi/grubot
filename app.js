@@ -284,7 +284,13 @@ function receivedMessage(event) {
       } else if (messageAttachments) { // IF NON-TEXT MESSAGE
         sendTextMessageChannel(senderID, user.name + ":");
         for (var i = 0; i < messageAttachments.length; i++) {
-            sendAttachmentMessageChannel(senderID, messageAttachments[i].type, messageAttachments[i].payload)
+            msgPayload = messageAttachments[i].payload;
+            if (msgPayload.sticker_id) {
+              msgPayload = {
+                url: msgPayload.url
+              }
+            }
+            sendAttachmentMessageChannel(senderID, messageAttachments[i].type, msgPayload)
         }
       }
     } else { // NO USER CASE
