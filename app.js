@@ -456,9 +456,9 @@ function sendPostSuccess(user, post) {
   var button = [{
     type: "postback",
     title: "View posts",
-    payload: {
+    payload: JSON.stringify({
       type: "VIEW_POSTS"
-    }
+    })
   }];
   // var viewPostReply = [{
   //   "content_type": "text",
@@ -497,10 +497,10 @@ function viewPosts(uid) {
         buttons: [{
           title: "Delete",
           type: "postback",
-          payload: {
+          payload: JSON.stringify({
             type: "DELETE_POST",
             postID: post.id
-          }
+          })
         }]
       };
     });
