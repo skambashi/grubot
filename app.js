@@ -813,7 +813,7 @@ function sendButtonMessage(recipientId, messageText, messageButtons) {
  * Send a list message using the Send API.
  *
  */
-function sendListMessage(recipientId, listItems, isCompact=false) {
+function sendListMessage(recipientId, listItems, isCompact) {
   var topElementStyle = isCompact ? 'compact' : '';
   var messageData = {
     recipient: {
