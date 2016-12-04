@@ -618,7 +618,11 @@ function viewPolls(uid) {
         }]
       };
     });
-    sendListMessage(uid, listItems, true);
+    if (listItems.length > 4) {
+      sendListMessage(uid, listItems.slice(-4), true);
+    } else {
+      sendListMessage(uid, listItems, true);
+    }
   });
 }
 
