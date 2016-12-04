@@ -589,9 +589,10 @@ function publishPoll(uid) {
       title: 'View polls',
       payload: ''
     }];
+    var pollId = user.buildingPollId;
     sendTextMessage(uid, "Your poll is live!");
     // viewPolls(uid);
-    viewPoll(user.buildingPollId);
+    viewPoll(pollId);
     sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
     user.buildingPollId = "";
     user.save(function(err, savedUser) {
@@ -605,6 +606,7 @@ function viewPolls(uid) {
 }
 
 function viewPoll(uid, pollId) {
+  console.log("[DEBUG] checking poll id: %s", pollId);
   Polls.get_poll(pollId, function(err, poll) {
     if (err) { console.error(err); }
     Polls.get_poll_choices(pollId, function(err, choices) {
