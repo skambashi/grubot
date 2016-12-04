@@ -492,21 +492,39 @@ function viewPosts(uid) {
   console.log("[POST] User %s viewing all posts", uid);
   Posts.get_all_posts(function(err, posts) {
     if (err) { console.error(err); }
-    var listItems = posts.map(function(post) {
-      return {
-        title: post.text,
-        subtitle: post.owner,
-        buttons: [{
-          title: "Delete",
-          type: "postback",
-          payload: JSON.stringify({
-            type: "DELETE_POST",
-            postID: post.id
-          })
-        }]
-      };
-    });
-    sendListMessage(uid, listItems);
+    if (posts.length === 0) {
+      sendTextMessage(uid, "There are no posts to view.");
+    } else if (posts.length === 1) {
+      var buttons = [{
+        type: "postback",
+        title: "Delete post",
+        payload: JSON.stringify({
+          type: "DELETE_POST",
+          postID: posts[0]._id
+        })
+      }];
+      sendButtonMessage(uid, posts[0].text, buttons);
+    } else {
+      var listItems = posts.map(function(post) {
+        return {
+          title: post.text,
+          subtitle: post.owner,
+          buttons: [{
+            type: "postback",
+            title: "Delete",
+            payload: JSON.stringify({
+              type: "DELETE_POST",
+              postID: post._id
+            })
+          }]
+        };
+      });
+      if (listItems.length > 4) {
+        sendListMessage(uid, listItems.slice(-4));
+      } else {
+        sendListMessage(uid, listItems);
+      }
+    }
   });
 }
 
