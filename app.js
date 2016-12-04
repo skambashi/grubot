@@ -285,6 +285,10 @@ function receivedMessage(event) {
               case 'start poll':
                 newPoll(senderID);
                 break;
+              case 'View polls':
+              case 'view polls':
+                viewPolls(senderID);
+                break;
               case 'Help':
               case 'help':
                 sendHelpMessage(senderID);
@@ -446,20 +450,21 @@ function postMessage(uid, message) {
     Posts.add_post(user.name, message, function(err, newPost) {
       if (err) { return console.error(err); }
       console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
-      sendPostSuccess(user, newPost.text);
+      onPostSuccess(user, newPost.text);
     });
   });
 }
 
-function sendPostSuccess(user, post) {
+function onPostSuccess(user, post) {
   console.log("[SEND_POST_SUCCESS] Sending post success.");
-  var viewPostOption = [{
-    "content_type": "text",
-    "title": "View posts",
-    "payload": ""
+  var viewPostsOption = [{
+    content_type: 'text',
+    title: 'View posts',
+    payload: ''
   }];
+  sendTextMessage(user.id, "Posted! Here's the current list of posts:");
   viewPosts(user.id);
-  sendQuickReplyChannel(user.id, user.name + " posted a message.", viewPostOption);
+  sendQuickReplyChannel(user.id, user.name + " posted a message.", viewPostsOption);
 }
 
 function newPost(uid) {
@@ -583,15 +588,26 @@ function publishPoll(uid) {
     user.save(function(err, savedUser) {
       if (err) { console.error(err); }
     });
-    sendTextMessage(uid, "Your poll has been published.");
-    sendTextMessageChannel(uid, user.name + " just published a poll!");
+    var viewPollsOption = [{
+      content_type: 'text',
+      title: 'View polls',
+      payload: ''
+    }];
+    sendTextMessage(uid, "Your poll is live! Check out other polls in this channel:");
+    viewPolls(uid);
+    sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
   });
+}
+
+function viewPolls(uid) {
+  sendTextMessage(uid, "no u");
 }
 
 function sendHelpMessage(uid) {
   console.log("[HELP] sending Help menu to user %s", uid);
   sendTextMessage(uid, "'Pin post': pin a message for everyone to see\n" +
                         "'View posts': view pinned messages\n" +
+                        "'Start poll': create a new poll\n" +
                         "'Subscribe': receive updates from Grubot\n" +
                         "'Unsubscribe': stop receiving updates");
 }
