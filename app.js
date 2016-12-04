@@ -15,7 +15,9 @@ const
 
 const
   DEFAULT_STATE = 'DEFAULT_STATE',
-  POSTING_STATE = 'POSTING_STATE';
+  POSTING_STATE = 'POSTING_STATE',
+  POLL_INPUT_QUESTION_STATE = 'POLL_INPUT_QUESTION_STATE',
+  POLL_INPUT_CHOICE_STATE = 'POLL_INPUT_QUESTION_STATE';
 // Send API error codes: https://developers.facebook.com/docs/messenger-platform/send-api-reference
 const MESSAGE_NOT_SENT = 1545041;
 
@@ -241,14 +243,6 @@ function receivedMessage(event) {
       messageId, appId, metadata);
     return;
   }
-  // else if (quickReply) {
-  //   var quickReplyPayload = quickReply.payload;
-  //   console.log("[RECEIVED_MESSAGE] QUICKREPLY | Quick reply for message %s with payload %s",
-  //     messageId, quickReplyPayload);
-  //
-  //   sendTextMessage(senderID, "Quick reply tapped");
-  //   return;
-  // }
 
   Users.get_user(senderID, function(err, user) {
     if (err) { return console.error(err); }
@@ -275,6 +269,9 @@ function receivedMessage(event) {
               case 'view posts':
                 viewPosts(senderID);
                 break;
+              case 'Start poll':
+              case 'start poll':
+                promptBuildPoll(senderID);
               default:
                 // sendTextMessage(senderID, messageText);
                 sendTextMessageChannel(senderID, user.name + ": " + messageText);
@@ -538,6 +535,20 @@ function deletePost(uid, postID) {
     if (err) { console.error(err); }
     console.log("[POST] Post %s deleted by User %s", postID, uid);
     viewPosts(uid);
+  });
+}
+
+function promptBuildPoll(uid) {
+  console.log("[POLL] User %s building poll", uid);
+  sendTextMessage(uid, "What is the poll question?");
+  Users.get_user(uid, function(err, user) {
+    user.state = POLL_INPUT_QUESTION_STATE;
+    user.save(function(err, savedUser) {
+      if (err) { return console.error(err); }
+      if (savedUser.state != DEFAULT_STATE) {
+        console.error("[ERROR] State of user: %s after starting poll is not POLL_INPUT_QUESTION_STATE.", savedUser.state);
+      }
+    });
   });
 }
 
