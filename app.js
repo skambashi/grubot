@@ -505,6 +505,7 @@ function viewPosts(uid) {
         }]
       };
     });
+    sendListMessage(uid, listItems);
   });
 }
 
