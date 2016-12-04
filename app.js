@@ -40,7 +40,6 @@ db.once('open', function() {
 });
 autoIncrement.initialize(db);
 
-var state = DEFAULT_STATE;
 var Users = require('./models/user.js');
 var Posts = require('./models/post.js');
 
@@ -250,99 +249,55 @@ function receivedMessage(event) {
     return;
   }
 
-  if (messageText) {
-    switch (state) {
-      // If we receive a text message, check to see if it matches any special
-      // keywords and send back the corresponding example. Otherwise, just echo
-      // the text we received.
-      case POSTING_STATE:
-        postMessage(senderID, messageText);
-        break;
-      default:
+  Users.get_user(senderID, function (err, user){
+    if (err) { return console.error(err); }
+    if (user) { // USER CASE
+      if (messageText) { // IF TEXT MESSAGE
+        switch (user.state) {
+          // If we receive a text message, check to see if it matches any special
+          // keywords and send back the corresponding example. Otherwise, just echo
+          // the text we received.
+          case POSTING_STATE:
+            postMessage(senderID, messageText);
+            break;
+          default:
+            switch (messageText) {
+              case 'Unsubscribe':
+              case 'unsubscribe':
+                removeUser(senderID);
+                break;
+              case 'Pin a post':
+              case 'pin a post':
+                promptPost(senderID);
+                break;
+              case 'View pinned posts':
+              case 'view pinned posts':
+                viewPosts(senderID);
+                break;
+              default:
+                // sendTextMessage(senderID, messageText);
+                sendTextMessageChannel(senderID, user.name + ": " + messageText);
+            }
+        }
+      } else if (messageAttachments) { // IF NON-TEXT MESSAGE
+        sendTextMessageChannel(senderID, user.name + ": Message with attachment sent.");
+      }
+    } else { // NO USER CASE
+      if (messageText) { // IF TEXT MESSAGE
         switch (messageText) {
           case 'Subscribe':
           case 'subscribe':
             registerUser(senderID);
             break;
-          case 'Unsubscribe':
-          case 'unsubscribe':
-            removeUser(senderID);
-            break;
-          case 'Pin a post':
-          case 'pin a post':
-            promptPost(senderID);
-            break;
-          case 'View pinned posts':
-          case 'view pinned posts':
-            viewPosts(senderID);
-            break;
-          case 'TEST image':
-            sendImageMessage(senderID);
-            break;
-
-          case 'TEST gif':
-            sendGifMessage(senderID);
-            break;
-
-          case 'TEST audio':
-            sendAudioMessage(senderID);
-            break;
-
-          case 'TEST video':
-            sendVideoMessage(senderID);
-            break;
-
-          case 'TEST file':
-            sendFileMessage(senderID);
-            break;
-
-          case 'TEST button':
-            sendButtonMessage(senderID);
-            break;
-
-          case 'TEST generic':
-            sendGenericMessage(senderID);
-            break;
-
-          case 'TEST receipt':
-            sendReceiptMessage(senderID);
-            break;
-
-          case 'TEST quick reply':
-            sendQuickReply(senderID);
-            break;
-
-          case 'TEST read receipt':
-            sendReadReceipt(senderID);
-            break;
-
-          case 'TEST typing on':
-            sendTypingOn(senderID);
-            break;
-
-          case 'TEST typing off':
-            sendTypingOff(senderID);
-            break;
-
-          case 'TEST account linking':
-            sendAccountLinking(senderID);
-            break;
-
           default:
-            // sendTextMessage(senderID, messageText);
-            Users.get_user(senderID, function (err, user){
-              if (err) { return console.error(err); }
-              if (user) {
-                sendTextMessageChannel(senderID, user.name + ": " + messageText);
-              } else {
-                sendTextMessage(senderID, "You are not subscribed to any channels. "+
-                  "Please subscribe before sending a message.");
-              }
-            });
+            sendTextMessage(senderID, "You are not subscribed to any channels. "+
+              "Please subscribe before sending a message.");
+        }
+      } else if (messageAttachments) { // IF NON-TEXT MESSAGE
+        sendTextMessage(senderID, "You are not subscribed to any channels. "+
+          "Please subscribe before sending a message.");
       }
-    }
-  } else if (messageAttachments) {
-    sendTextMessage(senderID, "Message with attachment received");
+    });
   }
 }
 
@@ -424,7 +379,7 @@ function registerUser(uid) {
         if (!error && response.statusCode === 200) {
           body = JSON.parse(body);
           console.log('[GRAPH_API] retrieved user register info.', body);
-          Users.add_user(uid, body.first_name, body.last_name,
+          Users.add_user(uid, DEFAULT_STATE, body.first_name, body.last_name,
             body.timezone, body.gender, function(err, newUser) {
               if (err) { return console.error(err); }
               console.log("[REGISTER_USER] %s | %s | %s || has been registered.",
@@ -466,13 +421,19 @@ function removeUser(uid) {
 }
 
 function postMessage(uid, message) {
-  state = DEFAULT_STATE;
-  Users.get_user({ id: uid }, function(err, user) {
+  Users.get_user(uid, function(err, user) {
     if (err) { return console.error(err); }
     Posts.add_post(user.first_name, message, function(err) {
       if (err) { return console.error(err); }
       sendPostSuccess(user, message);
       console.log("[POST] Added Post by User %s: '%s'", uid, message);
+    });
+    user.state = DEFAULT_STATE;
+    user.save(function(err, savedUser) {
+      if (err) { return console.error(err); }
+      if (savedUser.state != DEFAULT_STATE) {
+        console.error("[ERROR] State of user: %s after posting message is not DEFAULT_STATE.", savedUser.state);
+      }
     });
   });
 }
@@ -488,9 +449,19 @@ function sendPostSuccess(user, post) {
 }
 
 function promptPost(uid) {
-  state = POSTING_STATE;
   console.log("[POST] Request to post from User %s", uid);
   sendTextMessage(uid, "What would you like to post to the channel?");
+
+  Users.get_user(uid, function(err, user) {
+    if (err) { return console.error(err); }
+    user.state = POSTING_STATE;
+    user.save(function(err, savedUser) {
+      if (err) { return console.error(err); }
+      if (savedUser.state != POSTING_STATE) {
+        console.error("[ERROR] State of user: %s after posting message is not POSTING_STATE.", savedUser.state);
+      }
+    });
+  });
 }
 
 function viewPosts(uid) {

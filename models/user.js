@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var userSchema = mongoose.Schema({
   id: String,
+  state: String,
   first_name: String,
   last_name: String,
   timezone: Number,
@@ -13,9 +14,10 @@ userSchema.virtual('name').get(function () {
 
 var User = mongoose.model('User', userSchema);
 
-exports.add_user = function(uid, fn, ln, tz, gd, callback) {
+exports.add_user = function(uid, st, fn, ln, tz, gd, callback) {
   var newUser = new User({
     id: uid,
+    state: st,
     first_name: fn,
     last_name: ln,
     timezone: tz,
