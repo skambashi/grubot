@@ -397,6 +397,7 @@ function registerUser(uid) {
         method: 'GET'
       }, function (error, response, body) {
         if (!error && response.statusCode === 200) {
+          body = JSON.parse(body);
           console.log('[GRAPH_API] retrieved user register info.', body);
           console.log('[TEST] %s %s | %s | %s.', body.first_name, body.last_name,
             body.timezone, body.gender);
@@ -429,7 +430,7 @@ function removeUser(uid) {
     if (user) {
       Users.remove_user(uid, function(err) {
         if (err) { return console.error(err); }
-        console.log("[REMOVE_USER] Successfully removed user %s.", user_id);
+        console.log("[REMOVE_USER] Successfully removed user %s.", uid);
         sendTextMessageChannel(uid, user.name + " left the channel.");
       });
     } else {
