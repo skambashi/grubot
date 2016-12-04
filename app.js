@@ -358,9 +358,6 @@ function receivedPostback(event) {
       sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
         "What can I do for you?");
       break;
-    // case "VIEW_POSTS":
-    //   viewPosts(senderID);
-    //   break;
     case "DELETE_POST":
       deletePost(senderID, payload.postID);
       break;
@@ -505,7 +502,13 @@ function viewPosts(uid) {
           postID: posts[0]._id
         })
       }];
-      sendButtonMessage(uid, posts[0].text, buttons);
+      var elements = [{
+        title: posts[0].text,
+        subtitle: posts[0].owner,
+        buttons: buttons
+      }];
+      // sendButtonMessage(uid, posts[0].text, buttons);
+      sendGenericMessage(uid, elements);
     } else {
       var listItems = posts.map(function(post) {
         return {
@@ -724,7 +727,7 @@ function sendListMessage(recipientId, listItems) {
  * Send a Structured Message (Generic Message type) using the Send API.
  *
  */
-function sendGenericMessage(recipientId) {
+function sendGenericMessage(recipientId, messageElements) {
   var messageData = {
     recipient: {
       id: recipientId
@@ -734,35 +737,7 @@ function sendGenericMessage(recipientId) {
         type: "template",
         payload: {
           template_type: "generic",
-          elements: [{
-            title: "rift",
-            subtitle: "Next-generation virtual reality",
-            item_url: "https://www.oculus.com/en-us/rift/",
-            image_url: SERVER_URL + "/assets/rift.png",
-            buttons: [{
-              type: "web_url",
-              url: "https://www.oculus.com/en-us/rift/",
-              title: "Open Web URL"
-            }, {
-              type: "postback",
-              title: "Call Postback",
-              payload: "Payload for first bubble",
-            }],
-          }, {
-            title: "touch",
-            subtitle: "Your Hands, Now in VR",
-            item_url: "https://www.oculus.com/en-us/touch/",
-            image_url: SERVER_URL + "/assets/touch.png",
-            buttons: [{
-              type: "web_url",
-              url: "https://www.oculus.com/en-us/touch/",
-              title: "Open Web URL"
-            }, {
-              type: "postback",
-              title: "Call Postback",
-              payload: "Payload for second bubble",
-            }]
-          }]
+          elements: messageElements
         }
       }
     }
