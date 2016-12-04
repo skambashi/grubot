@@ -895,11 +895,7 @@ function callSendAPI(messageData) {
     } else {
       // clean up users that have deleted bot's convo
       if (body.error.error_subcode === MESSAGE_NOT_SENT) {
-        // Users.remove_user(body.recipient_id);
-        console.log("[DEBUG] failed to send");
-        console.log(error);
-        console.log(response);
-        console.log(body);
+        Users.remove_user(JSON.parse(response.request.body).recipient.id);
       }
       console.error("[SEND_API|ERROR] Failed calling Send API", response.statusCode, response.statusMessage, body.error);
     }
