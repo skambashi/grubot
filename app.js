@@ -558,11 +558,11 @@ function createChoice(uid, choice) {
           // advance user after state is set
           var replies = [{
             "content_type": "text",
-            "title": "Publish poll",
+            "title": "Another one",
             "payload": ""
           }, {
             "content_type": "text",
-            "title": "Another one",
+            "title": "Publish poll",
             "payload": ""
           }];
           sendQuickReply(uid, "Want to add another choice?", replies);
@@ -572,7 +572,20 @@ function createChoice(uid, choice) {
 }
 
 function continuePollInput(uid) {
-  // Users.get_user()
+  Users.set_user_state(uid, States.POLL_INPUT_CHOICE, 'adding another choice');
+  sendTextMessage(uid, "OK, what's the next choice?");
+}
+
+function publishPoll(uid) {
+  Users.set_user_state(uid, States.DEFAULT, 'publishing poll');
+  Users.get_user(uid, function(err, user) {
+    user.buildingPollId = "";
+    user.save(function(err, savedUser) {
+      if (err) { console.error(err); }
+    });
+    sendTextMessage(uid, "Your poll has been published.");
+    sendTextMessageChannel(uid, user.name + " just published a poll!");
+  });
 }
 
 function sendHelpMessage(uid) {
