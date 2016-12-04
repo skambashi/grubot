@@ -12,12 +12,6 @@ const
   express = require('express'),
   https = require('https'),
   request = require('request');
-
-const
-  DEFAULT_STATE = 'DEFAULT_STATE',
-  POSTING_STATE = 'POSTING_STATE',
-  POLL_INPUT_QUESTION_STATE = 'POLL_INPUT_QUESTION_STATE',
-  POLL_INPUT_CHOICE_STATE = 'POLL_INPUT_QUESTION_STATE';
 // Send API error codes: https://developers.facebook.com/docs/messenger-platform/send-api-reference
 const MESSAGE_NOT_SENT = 1545041;
 
@@ -44,6 +38,7 @@ db.once('open', function() {
 
 var Users = require('./models/user.js');
 var Posts = require('./models/post.js');
+var States = require('./states.js');
 
 //==============================================================================
 // CONFIG VALUES
@@ -252,7 +247,10 @@ function receivedMessage(event) {
           // If we receive a text message, check to see if it matches any special
           // keywords and send back the corresponding example. Otherwise, just echo
           // the text we received.
-          case POSTING_STATE:
+          case States.POLL_INPUT_QUESTION:
+            createPoll(senderID, messageText);
+            break;
+          case States.POSTING:
             postMessage(senderID, messageText);
             break;
           default:
@@ -263,7 +261,7 @@ function receivedMessage(event) {
                 break;
               case 'Pin post':
               case 'pin post':
-                promptPost(senderID);
+                newPost(senderID);
                 break;
               case 'View posts':
               case 'view posts':
@@ -271,7 +269,7 @@ function receivedMessage(event) {
                 break;
               case 'Start poll':
               case 'start poll':
-                promptBuildPoll(senderID);
+                newPoll(senderID);
                 break;
               case 'Help':
               case 'help':
@@ -392,7 +390,7 @@ function registerUser(uid) {
         if (!error && response.statusCode === 200) {
           body = JSON.parse(body);
           console.log('[GRAPH_API] retrieved user register info.', body);
-          Users.add_user(uid, DEFAULT_STATE, body.first_name, body.last_name,
+          Users.add_user(uid, States.DEFAULT, body.first_name, body.last_name,
             body.timezone, body.gender,
             function(err, newUser) {
               if (err) { return console.error(err); }
@@ -407,14 +405,6 @@ function registerUser(uid) {
       });
     }
   });
-
-  // Count isn't updated right away due to async push to mongodb.
-  // Need to wait a bit to call Users.count to get right number.
-  // Users.count(function(err, count){
-  //   if (err) { return console.error(err); }
-  //   console.log("[REGISTER_USER] Registered user count: %d.", count);
-  // });
-
 }
 
 function removeUser(uid) {
@@ -443,50 +433,43 @@ function postMessage(uid, message) {
       console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
       sendPostSuccess(user, newPost.text);
     });
-    user.state = DEFAULT_STATE;
+    user.state = States.DEFAULT;
     user.save(function(err, savedUser) {
       if (err) { return console.error(err); }
-      if (savedUser.state != DEFAULT_STATE) {
-        console.error("[ERROR] State of user: %s after posting message is not DEFAULT_STATE.", savedUser.state);
+      if (savedUser.state != States.DEFAULT) {
+        console.error("[ERROR] State of user: %s after posting message is not DEFAULT.", savedUser.state);
       }
     });
   });
+  // Users.set_user_state(uid, States.DEFAULT, "posting message");
 }
 
 function sendPostSuccess(user, post) {
   console.log("[SEND_POST_SUCCESS] Sending post success.");
-  // var button = [{
-  //   type: "postback",
-  //   title: "View posts",
-  //   payload: JSON.stringify({
-  //     type: "VIEW_POSTS"
-  //   })
-  // }];
   var viewPostOption = [{
     "content_type": "text",
     "title": "View posts",
     "payload": ""
   }];
-  // sendButtonMessage(user.id, "Your message has been posted.", button);
   viewPosts(user.id);
   sendQuickReplyChannel(user.id, user.name + " posted a message.", viewPostOption);
-  // sendTextMessageChannel(user.id, user.name + " posted a message: " + post);
 }
 
-function promptPost(uid) {
+function newPost(uid) {
   console.log("[POST] Request to post from User %s", uid);
   sendTextMessage(uid, "What message would you like to post?");
 
-  Users.get_user(uid, function(err, user) {
-    if (err) { return console.error(err); }
-    user.state = POSTING_STATE;
-    user.save(function(err, savedUser) {
-      if (err) { return console.error(err); }
-      if (savedUser.state != POSTING_STATE) {
-        console.error("[ERROR] State of user: %s after posting message is not POSTING_STATE.", savedUser.state);
-      }
-    });
-  });
+  // Users.get_user(uid, function(err, user) {
+  //   if (err) { return console.error(err); }
+  //   user.state = States.POSTING;
+  //   user.save(function(err, savedUser) {
+  //     if (err) { return console.error(err); }
+  //     if (savedUser.state != States.POSTING) {
+  //       console.error("[ERROR] State of user: %s after posting message is not POSTING.", savedUser.state);
+  //     }
+  //   });
+  // });
+  Users.set_user_state(uid, States.POSTING, 'starting new post');
 }
 
 function viewPosts(uid) {
@@ -509,7 +492,6 @@ function viewPosts(uid) {
         subtitle: posts[0].owner,
         buttons: buttons
       }];
-      // sendButtonMessage(uid, posts[0].text, buttons);
       sendGenericMessage(uid, elements);
     } else {
       var listItems = posts.map(function(post) {
@@ -543,16 +525,34 @@ function deletePost(uid, postID) {
   });
 }
 
-function promptBuildPoll(uid) {
+function newPoll(uid) {
   console.log("[POLL] User %s building poll", uid);
-  sendTextMessage(uid, "What is the poll question?");
+  sendTextMessage(uid, "What would you like to ask the channel?");
   Users.get_user(uid, function(err, user) {
-    user.state = POLL_INPUT_QUESTION_STATE;
+    user.state = States.POLL_INPUT_QUESTION;
     user.save(function(err, savedUser) {
       if (err) { return console.error(err); }
-      if (savedUser.state != DEFAULT_STATE) {
-        console.error("[ERROR] State of user: %s after starting poll is not POLL_INPUT_QUESTION_STATE.", savedUser.state);
+      if (savedUser.state != States.DEFAULT) {
+        console.error("[ERROR] State of user: %s after starting poll is not POLL_INPUT_QUESTION.", savedUser.state);
       }
+    });
+  });
+}
+
+function createPoll(ownerId, question) {
+  console.log("[POLL] User %s create poll", ownerId);
+  Polls.add_poll(owner, question, function(err, newPoll) {
+    if (err) { console.error(err); }
+    Users.get_user(ownerId, function(err, user) {
+      if (err) { console.error(err); }
+      user.buildingPollId = newPoll.id;
+      user.state = States.POLL_INPUT_CHOICE;
+      user.save(function(err, savedUser) {
+        if (err) { return console.error(err); }
+        if (savedUser.buildingPollId != newPoll.id) {
+          console.error("[ERROR] User buildingPollId: %s after creating poll is not %s.", savedUser.buildingPollId, newPoll.id);
+        }
+      });
     });
   });
 }

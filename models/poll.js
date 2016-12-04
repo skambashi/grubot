@@ -19,11 +19,11 @@ var pollSchema = mongoose.Schema({
 
 var Poll = mongoose.model('Poll', pollSchema);
 
-exports.add_poll = function(pollOwner, pollName, callback) {
+exports.add_poll = function(pollOwner, pollQuestion, callback) {
   // callback signature for add_poll : function(err, newPoll)
   var newPoll = new Poll({
     owner: pollOwner,
-    text: pollName
+    text: pollQuestion
   });
   newPoll.save(callback);
 };
