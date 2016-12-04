@@ -404,8 +404,9 @@ function registerUser(uid) {
           Users.add_user(uid, body.first_name, body.last_name,
             body.timezone, body.gender, function(err, newUser) {
               if (err) { return console.error(err); }
-              console.log("[REGISTER_USER] %s | %s | %s : has been registered.",
+              console.log("[REGISTER_USER] %s | %s | %s || has been registered.",
                 newUser.name, newUser.id, newUser.gender);
+              sendTextMessage(uid, "You have joined the channel.");
               sendTextMessageChannel(uid, newUser.name + ' has joined!');
             });
         } else {
@@ -431,6 +432,7 @@ function removeUser(uid) {
       Users.remove_user(uid, function(err) {
         if (err) { return console.error(err); }
         console.log("[REMOVE_USER] Successfully removed user %s.", uid);
+        sendTextMessage(uid, "You have left the channel.");
         sendTextMessageChannel(uid, user.name + " left the channel.");
       });
     } else {
