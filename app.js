@@ -594,10 +594,10 @@ function publishPoll(uid) {
     // viewPolls(uid);
     viewPoll(pollId);
     sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
-    user.buildingPollId = "";
-    user.save(function(err, savedUser) {
-      if (err) { console.error(err); }
-    });
+    // user.buildingPollId = "";
+    // user.save(function(err, savedUser) {
+    //   if (err) { console.error(err); }
+    // });
   });
 }
 
