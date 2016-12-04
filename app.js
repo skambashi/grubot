@@ -440,22 +440,15 @@ function removeUser(uid) {
 
 function postMessage(uid, message) {
   console.log("[POST] Attempting to create post '%s' from User %s", message, uid);
+  Users.set_user_state(uid, States.DEFAULT, "posting message");
   Users.get_user(uid, function(err, user) {
     if (err) { return console.error(err); }
-    user.state = States.DEFAULT;
-    user.save(function(err, savedUser) {
-      if (err) { console.error(err); }
-      if (savedUser.state != States.DEFAULT) {
-        console.error("[ERROR] State of user: %s after posting message is not DEFAULT", savedUser.state);
-      }
-      Posts.add_post(savedUser.name, message, function(err, newPost) {
-        if (err) { return console.error(err); }
-        console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
-        sendPostSuccess(savedUser, newPost.text);
-      });
+    Posts.add_post(user.name, message, function(err, newPost) {
+      if (err) { return console.error(err); }
+      console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
+      sendPostSuccess(user, newPost.text);
     });
   });
-  // Users.set_user_state(uid, States.DEFAULT, "posting message");
 }
 
 function sendPostSuccess(user, post) {
@@ -471,8 +464,8 @@ function sendPostSuccess(user, post) {
 
 function newPost(uid) {
   console.log("[POST] Request to post from User %s", uid);
-  sendTextMessage(uid, "What message would you like to post?");
   Users.set_user_state(uid, States.POSTING, 'starting new post');
+  sendTextMessage(uid, "What message would you like to post?");
 }
 
 function viewPosts(uid) {
@@ -530,8 +523,8 @@ function deletePost(uid, postID) {
 
 function newPoll(uid) {
   console.log("[POLL] User %s building poll", uid);
-  sendTextMessage(uid, "What would you like to ask the channel?");
   Users.set_user_state(uid, States.POLL_INPUT_QUESTION, "starting poll");
+  sendTextMessage(uid, "What would you like to ask the channel?");
 }
 
 function createPoll(ownerId, question) {

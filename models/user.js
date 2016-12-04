@@ -50,17 +50,17 @@ exports.get_other_users = function(user_id, callback) {
   User.find({ id: { $ne: user_id } }, callback);
 }
 
-// exports.set_user_state = function(user_id, state, action) {
-//   User.findOne({ id: user_id }, function(err, user) {
-//     user.state = state;
-//     user.save(function(err, savedUser) {
-//       if (err) { return console.error(err) }
-//       if (savedUser.state != state) {
-//         console.error("[ERROR] State of user: %s after %s is not %s", savedUser.state, action, state);
-//       }
-//     });
-//   });
-// }
+exports.set_user_state = function(user_id, state, action) {
+  User.findOne({ id: user_id }, function(err, user) {
+    user.state = state;
+    user.save(function(err, savedUser) {
+      if (err) { return console.error(err) }
+      if (savedUser.state != state) {
+        console.error("[ERROR] State of user: %s after %s is not %s", savedUser.state, action, state);
+      }
+    });
+  });
+}
 
 exports.count = function(callback) {
   User.count({}, callback);
