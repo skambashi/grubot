@@ -13,6 +13,9 @@ const
   https = require('https'),
   request = require('request');
 
+const
+  DEFAULT_STATE = 'DEFAULT_STATE',
+  POSTING_STATE = 'POSTING_STATE';
 // Send API error codes: https://developers.facebook.com/docs/messenger-platform/send-api-reference
 const MESSAGE_NOT_SENT = 1545041;
 
@@ -37,7 +40,9 @@ db.once('open', function() {
 });
 autoIncrement.initialize(db);
 
+var state = DEFAULT_STATE;
 var Users = require('./models/user.js');
+var Posts = require('./models/post.js');
 
 //==============================================================================
 // CONFIG VALUES
@@ -246,82 +251,95 @@ function receivedMessage(event) {
   }
 
   if (messageText) {
-
-    // If we receive a text message, check to see if it matches any special
-    // keywords and send back the corresponding example. Otherwise, just echo
-    // the text we received.
-    switch (messageText) {
-      case 'Subscribe':
-      case 'subscribe':
-        registerUser(senderID);
+    switch (state) {
+      // If we receive a text message, check to see if it matches any special
+      // keywords and send back the corresponding example. Otherwise, just echo
+      // the text we received.
+      case POSTING_STATE:
+        postMessage(senderID, messageText);
         break;
-      case 'Unsubscribe':
-      case 'unsubscribe':
-        removeUser(senderID);
-        break;
-      case 'TEST image':
-        sendImageMessage(senderID);
-        break;
-
-      case 'TEST gif':
-        sendGifMessage(senderID);
-        break;
-
-      case 'TEST audio':
-        sendAudioMessage(senderID);
-        break;
-
-      case 'TEST video':
-        sendVideoMessage(senderID);
-        break;
-
-      case 'TEST file':
-        sendFileMessage(senderID);
-        break;
-
-      case 'TEST button':
-        sendButtonMessage(senderID);
-        break;
-
-      case 'TEST generic':
-        sendGenericMessage(senderID);
-        break;
-
-      case 'TEST receipt':
-        sendReceiptMessage(senderID);
-        break;
-
-      case 'TEST quick reply':
-        sendQuickReply(senderID);
-        break;
-
-      case 'TEST read receipt':
-        sendReadReceipt(senderID);
-        break;
-
-      case 'TEST typing on':
-        sendTypingOn(senderID);
-        break;
-
-      case 'TEST typing off':
-        sendTypingOff(senderID);
-        break;
-
-      case 'TEST account linking':
-        sendAccountLinking(senderID);
-        break;
-
       default:
-        // sendTextMessage(senderID, messageText);
-        Users.get_user(senderID, function (err, user){
-          if (err) { return console.error(err); }
-          if (user) {
-            sendTextMessageChannel(senderID, user.name + ": " + messageText);
-          } else {
-            sendTextMessage(senderID, "You are not subscribed to any channels. "+
-              "Please subscribe before sending a message.");
-          }
-        });
+        switch (messageText) {
+          case 'Subscribe':
+          case 'subscribe':
+            registerUser(senderID);
+            break;
+          case 'Unsubscribe':
+          case 'unsubscribe':
+            removeUser(senderID);
+            break;
+          case 'Pin a post':
+          case 'pin a post':
+            promptPost(senderID);
+            break;
+          case 'View pinned posts':
+          case 'view pinned posts':
+            viewPosts(senderID);
+            break;
+          case 'TEST image':
+            sendImageMessage(senderID);
+            break;
+
+          case 'TEST gif':
+            sendGifMessage(senderID);
+            break;
+
+          case 'TEST audio':
+            sendAudioMessage(senderID);
+            break;
+
+          case 'TEST video':
+            sendVideoMessage(senderID);
+            break;
+
+          case 'TEST file':
+            sendFileMessage(senderID);
+            break;
+
+          case 'TEST button':
+            sendButtonMessage(senderID);
+            break;
+
+          case 'TEST generic':
+            sendGenericMessage(senderID);
+            break;
+
+          case 'TEST receipt':
+            sendReceiptMessage(senderID);
+            break;
+
+          case 'TEST quick reply':
+            sendQuickReply(senderID);
+            break;
+
+          case 'TEST read receipt':
+            sendReadReceipt(senderID);
+            break;
+
+          case 'TEST typing on':
+            sendTypingOn(senderID);
+            break;
+
+          case 'TEST typing off':
+            sendTypingOff(senderID);
+            break;
+
+          case 'TEST account linking':
+            sendAccountLinking(senderID);
+            break;
+
+          default:
+            // sendTextMessage(senderID, messageText);
+            Users.get_user(senderID, function (err, user){
+              if (err) { return console.error(err); }
+              if (user) {
+                sendTextMessageChannel(senderID, user.name + ": " + messageText);
+              } else {
+                sendTextMessage(senderID, "You are not subscribed to any channels. "+
+                  "Please subscribe before sending a message.");
+              }
+            });
+      }
     }
   } else if (messageAttachments) {
     sendTextMessage(senderID, "Message with attachment received");
@@ -370,17 +388,21 @@ function receivedPostback(event) {
   // button for Structured Messages.
   var payload = event.postback.payload;
 
-
-  if (payload === "NEW_USER") {
-    registerUser(senderID);
-    sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
+  switch (payload) {
+    case "NEW_USER":
+      registerUser(senderID);
+      sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
       "What can I do for you?");
-  } else {
-    console.log("Received postback for user %d and page %d with payload '%s' " +
-      "at %d", senderID, recipientID, payload, timeOfPostback);
-    // When a postback is called, we'll send a message back to the sender to
-    // let them know it was successful
-    sendTextMessage(senderID, "Postback called");
+      break;
+    case "VIEW_POSTS":
+      viewPosts(senderID);
+    default:
+      console.log("Received postback for user %d and page %d with payload '%s' " +
+        "at %d", senderID, recipientID, payload, timeOfPostback);
+      // When a postback is called, we'll send a message back to the sender to
+      // let them know it was successful
+      sendTextMessage(senderID, "Postback called");
+      break;
   }
 }
 
@@ -441,6 +463,39 @@ function removeUser(uid) {
       sendTextMessage(uid, "You are not subscribed to any channels.");
     }
   });
+}
+
+function postMessage(uid, message) {
+  state = DEFAULT_STATE;
+  Users.get_user({ id: uid }, function(err, user) {
+    if (err) { return console.error(err); }
+    Posts.add_post(user.first_name, message, function(err) {
+      if (err) { return console.error(err); }
+      sendPostSuccess(user, message);
+      console.log("[POST] Added Post by User %s: '%s'", uid, message);
+    });
+  });
+}
+
+function sendPostSuccess(user, post) {
+  var button = [{
+        type: "postback",
+        title: "View posts",
+        payload: "VIEW_POSTS"
+      }];
+  sendButtonMessage(user.id, "Your message has been posted!", button);
+  sendTextMessageChanngel(user.first_name + " posted a message: " + post);
+}
+
+function promptPost(uid) {
+  state = POSTING_STATE;
+  console.log("[POST] Request to post from User %s", uid);
+  sendTextMessage(uid, "What would you like to post to the channel?");
+}
+
+function viewPosts(uid) {
+  // TODO: this
+  sendTextMessage(uid, "no u");
 }
 
 /*
@@ -669,7 +724,7 @@ function sendFileMessage(recipientId) {
  * Send a button message using the Send API.
  *
  */
-function sendButtonMessage(recipientId) {
+function sendButtonMessage(recipientId, messageText, messageButtons) {
   var messageData = {
     recipient: {
       id: recipientId
@@ -679,20 +734,8 @@ function sendButtonMessage(recipientId) {
         type: "template",
         payload: {
           template_type: "button",
-          text: "This is test text",
-          buttons:[{
-            type: "web_url",
-            url: "https://www.oculus.com/en-us/rift/",
-            title: "Open Web URL"
-          }, {
-            type: "postback",
-            title: "Trigger Postback",
-            payload: "DEVELOPER_DEFINED_PAYLOAD"
-          }, {
-            type: "phone_number",
-            title: "Call Phone Number",
-            payload: "+16505551234"
-          }]
+          text: messageText,
+          buttons: messageButtons
         }
       }
     }

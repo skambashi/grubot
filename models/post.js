@@ -3,15 +3,17 @@ var mongoose = require('mongoose'),
 
 var postSchema = mongoose.Schema({
   id: Number,
+  owner: String,
   text: String
 });
 postSchema.plugin(autoIncrement.plugin, { model: 'Post', field: 'id' });
 
 var Post = mongoose.model('Post', postSchema);
 
-exports.add_post = function(postText, callback) {
+exports.add_post = function(postOwner, postText, callback) {
   // callback signature for add_post : function(err, newPost)
   var newPost = new Post({
+    owner: postOwner,
     text: postText
   });
   newPost.save(callback);
