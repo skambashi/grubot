@@ -51,7 +51,7 @@ exports.get_other_users = function(user_id, callback) {
 }
 
 exports.set_user_state = function(user_id, state, action) {
-  exports.get_user(user_id, function(err, user) {
+  User.findOne({ id: user_id }, function(err, user) {
     user.state = state;
     user.save(function(err, savedUser) {
       if (err) { return console.error(err) }
