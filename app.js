@@ -361,8 +361,10 @@ function receivedPostback(event) {
       break;
     case "VIEW_POSTS":
       viewPosts(senderID);
+      break;
     case "DELETE_POST":
       deletePost(senderID, payload.postID);
+      break;
 
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
