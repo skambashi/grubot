@@ -7,7 +7,7 @@ var userSchema = mongoose.Schema({
   last_name: String,
   timezone: Number,
   gender: String,
-  buildingPollId: Number
+  buildingPollId: String
 });
 userSchema.virtual('name').get(function () {
   return this.first_name + ' ' + this.last_name;
