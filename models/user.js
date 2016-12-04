@@ -23,7 +23,7 @@ exports.add_user = function(uid, st, fn, ln, tz, gd, callback) {
     last_name: ln,
     timezone: tz,
     gender: gd,
-    buildingPollId: -1
+    buildingPollId: ""
   });
   newUser.save(callback);
 };
