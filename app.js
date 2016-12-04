@@ -613,12 +613,29 @@ function viewPolls(uid) {
           title: "View poll",
           payload: JSON.stringify({
             type: "VIEW_POLL",
-            pollID: poll._id
+            pollID: poll.id
           })
         }]
       };
     });
-    if (listItems.length > 4) {
+    if (listItems.length === 0) {
+      sendTextMessage(uid, 'There are no polls to view in this channel.');
+    } else if (listItems.length === 1) {
+      var buttons = [{
+        type: "postback",
+        title: "View poll",
+        payload: JSON.stringify({
+          type: "VIEW_POLL",
+          pollID: polls[0].id
+        })
+      }];
+      var elements = [{
+        title: polls[0].text,
+        subtitle: 'asked by ' + polls[0].owner,
+        buttons: buttons
+      }];
+      sendGenericMessage(uid, elements);
+    } else if (listItems.length > 4) {
       sendListMessage(uid, listItems.slice(-4), true);
     } else {
       sendListMessage(uid, listItems, true);
