@@ -434,6 +434,7 @@ function removeUser(uid) {
 }
 
 function postMessage(uid, message) {
+  console.log("[POST] Attempting to create post '%s' from User %s", message, uid);
   Users.get_user(uid, function(err, user) {
     if (err) {
       return console.error(err);

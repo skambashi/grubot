@@ -6,7 +6,7 @@ var postSchema = mongoose.Schema({
   owner: String,
   text: String
 });
-postSchema.plugin(autoIncrement.plugin, { model: 'Post', field: 'id' });
+postSchema.plugin(autoIncrement.plugin, { model: 'Post', field: 'id', startAt: 0 });
 
 var Post = mongoose.model('Post', postSchema);
 
