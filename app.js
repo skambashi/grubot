@@ -816,7 +816,7 @@ function sendButtonMessage(recipientId, messageText, messageButtons) {
  *
  */
 function sendListMessage(recipientId, listItems, isCompact) {
-  var topElementStyle = isCompact ? 'compact' : '';
+  var topElementStyle = isCompact ? 'compact' : 'large';
   var messageData = {
     recipient: {
       id: recipientId
