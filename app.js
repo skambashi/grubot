@@ -351,6 +351,7 @@ function receivedPostback(event) {
   // The 'payload' param is a developer-defined field which is set in a postback
   // button for Structured Messages.
   var payload = JSON.parse(event.postback.payload);
+  console.log("[DEBUG] checking payload", payload);
 
   switch (payload.type) {
     case "NEW_USER":
