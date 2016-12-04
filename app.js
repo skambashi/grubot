@@ -440,10 +440,10 @@ function postMessage(uid, message) {
   console.log("[POST] Attempting to create post '%s' from User %s", message, uid);
   Users.get_user(uid, function(err, user) {
     if (err) { return console.error(err); }
-    Posts.add_post(user.first_name, message, function(err) {
+    Posts.add_post(user.first_name, message, function(err, newPost) {
       if (err) { return console.error(err); }
-      sendPostSuccess(user, message);
-      console.log("[POST] Added Post by User %s: '%s'", uid, message);
+      console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
+      sendPostSuccess(user, newPost.text);
     });
     user.state = DEFAULT_STATE;
     user.save(function(err, savedUser) {
@@ -456,6 +456,7 @@ function postMessage(uid, message) {
 }
 
 function sendPostSuccess(user, post) {
+  console.log("[SEND_POST_SUCCESS] Sending post success.");
   var button = [{
     type: "postback",
     title: "View posts",
