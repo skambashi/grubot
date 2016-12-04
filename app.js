@@ -309,7 +309,15 @@ function receivedMessage(event) {
 
       default:
         // sendTextMessage(senderID, messageText);
-        sendTextMessageChannel(senderID, senderID + ": " + messageText);
+        Users.get_user(senderID, function (err, user){
+          if (err) { return console.error(err); }
+          if (user) {
+            sendTextMessageChannel(senderID, user.name + ": " + messageText);
+          } else {
+            sendTextMessage(senderID, "You are not subscribed to any channels. "+
+              "Please subscribe before sending a message.");
+          }
+        });
     }
   } else if (messageAttachments) {
     sendTextMessage(senderID, "Message with attachment received");
@@ -374,36 +382,59 @@ function receivedPostback(event) {
 
 function registerUser(uid) {
   // TODO: update user model to inclue name, etc.
-  request({
-    uri: 'https://graph.facebook.com/v2.6/' + uid,
-    qs: {
-          access_token: PAGE_ACCESS_TOKEN,
-          fields: 'first_name,last_name,locale,timezone,gender'
-        },
-    method: 'GET'
-  }, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      console.log('[GRAPH_API] retrieved user register info', body);
+  Users.get_user(uid, function (err, user){
+    if (err) { return console.error(err); }
+    if (user) {
+      console.log("[WARNING] Can't add user %s that is already registered.", uid);
+      sendTextMessage(uid, "You are already subscribed to a channel.");
     } else {
-      console.error("[GRAPH_API|ERROR] Failed calling Graph API", response.statusCode, response.statusMessage, body.error);
+      request({
+        uri: 'https://graph.facebook.com/v2.6/' + uid,
+        qs: {
+              access_token: PAGE_ACCESS_TOKEN,
+              fields: 'first_name,last_name,locale,timezone,gender'
+            },
+        method: 'GET'
+      }, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          console.log('[GRAPH_API] retrieved user register info.', body);
+          Users.add_user(uid, body.first_name, body.last_name,
+            body.timezone, body.gender, function(err, newUser) {
+              if (err) { return console.error(err); }
+              console.log("[REGISTER_USER] %s | %s | %s : has been registered.",
+                newUser.name, newUser.id, newUser.gender);
+              sendTextMessageChannel(uid, user.name + ' has joined!');
+            });
+        } else {
+          console.error("[ERROR] Failed calling Graph API.", response.statusCode, response.statusMessage, body.error);
+        }
+      });
     }
   });
-  Users.add_user(uid);
-  sendTextMessageChannel(uid, uid + ' has joined!');
-  console.log("[REGISTER_USER] Registered new user %d. ", uid);
 
   // TODO: Count isn't updated right away due to async push to mongodb.
   // Need to wait a bit to call Users.count to get right number.
-  // Users.count(function(count) {
+  // Users.count(function(err, count){
+  //   if (err) { return console.error(err); }
   //   console.log("[REGISTER_USER] Registered user count: %d.", count);
   // });
 
 }
 
 function removeUser(uid) {
-  Users.remove_user(uid);
-  sendTextMessageChannel(uid, uid + " left the channel.");
-  console.log("[REMOVE_USER] Removed user %d.", uid);
+  Users.get_user(uid, function (err, user){
+    if (err) { return console.error(err); }
+    if (user) {
+      Users.remove_user(uid, function(err) {
+        if (err) { return console.error(err); }
+        console.log("[REMOVE_USER] Successfully removed user %s.", user_id);
+        sendTextMessageChannel(uid, user.name + " left the channel.");
+      });
+    } else {
+      console.log("[WARNING] Can't remove user %s which is not in the database.", uid);
+      sendTextMessage(uid, "You are not subscribed to any channels.");
+    }
+  });
 }
 
 /*
@@ -481,18 +512,21 @@ function receivedAccountLink(event) {
  *
  */
 function sendTextMessageChannel(senderID, messageText) {
-  Users.get_other_users(senderID, function(users) {
-    for (var i = 0; i < users.length; i++) {
-      var messageData = {
-        recipient: {
-          id: users[i].id
-        },
-        message: {
-          text: messageText,
-          metadata: "DEVELOPER_DEFINED_METADATA"
-        }
-      };
-      callSendAPI(messageData);
+  Users.get_other_users(senderID, function (err, users) {
+    if (err) { return console.error(err); }
+    if (users) {
+      for (var i = 0; i < users.length; i++) {
+        var messageData = {
+          recipient: {
+            id: users[i].id
+          },
+          message: {
+            text: messageText,
+            metadata: "DEVELOPER_DEFINED_METADATA"
+          }
+        };
+        callSendAPI(messageData);
+      }
     }
   });
 }
