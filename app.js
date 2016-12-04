@@ -252,9 +252,7 @@ function receivedMessage(event) {
   }
 
   Users.get_user(senderID, function(err, user) {
-    if (err) {
-      return console.error(err);
-    }
+    if (err) { return console.error(err); }
     if (user) { // USER CASE
       if (messageText) { // IF TEXT MESSAGE
         switch (user.state) {
@@ -367,9 +365,7 @@ function receivedPostback(event) {
 
 function registerUser(uid) {
   Users.get_user(uid, function(err, user) {
-    if (err) {
-      return console.error(err);
-    }
+    if (err) { return console.error(err); }
     if (user) {
       console.log("[WARNING] Can't add user %s that is already registered.", uid);
       sendTextMessage(uid, "You are already subscribed to a channel.");
@@ -388,9 +384,7 @@ function registerUser(uid) {
           Users.add_user(uid, DEFAULT_STATE, body.first_name, body.last_name,
             body.timezone, body.gender,
             function(err, newUser) {
-              if (err) {
-                return console.error(err);
-              }
+              if (err) { return console.error(err); }
               console.log("[REGISTER_USER] %s | %s | %s || has been registered.",
                 newUser.name, newUser.id, newUser.gender);
               sendTextMessage(uid, "You have joined the channel.");
@@ -414,14 +408,10 @@ function registerUser(uid) {
 
 function removeUser(uid) {
   Users.get_user(uid, function(err, user) {
-    if (err) {
-      return console.error(err);
-    }
+    if (err) { return console.error(err); }
     if (user) {
       Users.remove_user(uid, function(err) {
-        if (err) {
-          return console.error(err);
-        }
+        if (err) { return console.error(err); }
         console.log("[REMOVE_USER] Successfully removed user %s.", uid);
         sendTextMessage(uid, "You have left the channel.");
         sendTextMessageChannel(uid, user.name + " left the channel.");
@@ -436,21 +426,15 @@ function removeUser(uid) {
 function postMessage(uid, message) {
   console.log("[POST] Attempting to create post '%s' from User %s", message, uid);
   Users.get_user(uid, function(err, user) {
-    if (err) {
-      return console.error(err);
-    }
+    if (err) { return console.error(err); }
     Posts.add_post(user.first_name, message, function(err) {
-      if (err) {
-        return console.error(err);
-      }
+      if (err) { return console.error(err); }
       sendPostSuccess(user, message);
       console.log("[POST] Added Post by User %s: '%s'", uid, message);
     });
     user.state = DEFAULT_STATE;
     user.save(function(err, savedUser) {
-      if (err) {
-        return console.error(err);
-      }
+      if (err) { return console.error(err); }
       if (savedUser.state != DEFAULT_STATE) {
         console.error("[ERROR] State of user: %s after posting message is not DEFAULT_STATE.", savedUser.state);
       }
@@ -465,7 +449,7 @@ function sendPostSuccess(user, post) {
     payload: "VIEW_POSTS"
   }];
   sendButtonMessage(user.id, "Your message has been posted!", button);
-  sendTextMessageChanngel(user.first_name + " posted a message: " + post);
+  sendTextMessageChannel(user.first_name + " posted a message: " + post);
 }
 
 function promptPost(uid) {
@@ -473,14 +457,10 @@ function promptPost(uid) {
   sendTextMessage(uid, "What would you like to post to the channel?");
 
   Users.get_user(uid, function(err, user) {
-    if (err) {
-      return console.error(err);
-    }
+    if (err) { return console.error(err); }
     user.state = POSTING_STATE;
     user.save(function(err, savedUser) {
-      if (err) {
-        return console.error(err);
-      }
+      if (err) { return console.error(err); }
       if (savedUser.state != POSTING_STATE) {
         console.error("[ERROR] State of user: %s after posting message is not POSTING_STATE.", savedUser.state);
       }
@@ -569,9 +549,7 @@ function receivedAccountLink(event) {
  */
 function sendTextMessageChannel(senderID, messageText) {
   Users.get_other_users(senderID, function(err, users) {
-    if (err) {
-      return console.error(err);
-    }
+    if (err) { return console.error(err); }
     if (users) {
       for (var i = 0; i < users.length; i++) {
         var messageData = {
