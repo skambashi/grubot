@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+    ObjectID = require('mongodb').ObjectID;
 
 var postSchema = mongoose.Schema({
   owner: String,
@@ -19,7 +20,7 @@ exports.add_post = function(postOwner, postText, callback) {
 
 exports.remove_post = function(p_id, callback) {
   // callback signature for remove_post: function(err)
-  Post.remove({ id: new ObjectId(p_id) }, callback);
+  Post.remove({ id: new ObjectID(p_id) }, callback);
 };
 
 exports.get_all_posts = function(callback) {
