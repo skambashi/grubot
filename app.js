@@ -248,6 +248,8 @@ function receivedMessage(event) {
           // If we receive a text message, check to see if it matches any special
           // keywords and send back the corresponding example. Otherwise, just echo
           // the text we received.
+          case States.POLL_INPUT_CHOICE:
+            createChoice(senderID, messageText);
           case States.POLL_INPUT_QUESTION:
             createPoll(senderID, messageText);
             break;
@@ -434,13 +436,6 @@ function postMessage(uid, message) {
       console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
       sendPostSuccess(user, newPost.text);
     });
-    // user.state = States.DEFAULT;
-    // user.save(function(err, savedUser) {
-    //   if (err) { return console.error(err); }
-    //   if (savedUser.state != States.DEFAULT) {
-    //     console.error("[ERROR] State of user: %s after posting message is not DEFAULT.", savedUser.state);
-    //   }
-    // });
   });
   Users.set_user_state(uid, States.DEFAULT, "posting message");
 }
@@ -459,17 +454,6 @@ function sendPostSuccess(user, post) {
 function newPost(uid) {
   console.log("[POST] Request to post from User %s", uid);
   sendTextMessage(uid, "What message would you like to post?");
-
-  // Users.get_user(uid, function(err, user) {
-  //   if (err) { return console.error(err); }
-  //   user.state = States.POSTING;
-  //   user.save(function(err, savedUser) {
-  //     if (err) { return console.error(err); }
-  //     if (savedUser.state != States.POSTING) {
-  //       console.error("[ERROR] State of user: %s after posting message is not POSTING.", savedUser.state);
-  //     }
-  //   });
-  // });
   Users.set_user_state(uid, States.POSTING, 'starting new post');
 }
 
@@ -529,15 +513,7 @@ function deletePost(uid, postID) {
 function newPoll(uid) {
   console.log("[POLL] User %s building poll", uid);
   sendTextMessage(uid, "What would you like to ask the channel?");
-  Users.get_user(uid, function(err, user) {
-    user.state = States.POLL_INPUT_QUESTION;
-    user.save(function(err, savedUser) {
-      if (err) { return console.error(err); }
-      if (savedUser.state != States.DEFAULT) {
-        console.error("[ERROR] State of user: %s after starting poll is not POLL_INPUT_QUESTION.", savedUser.state);
-      }
-    });
-  });
+  Users.set_user_state(uid, States.POLL_INPUT_QUESTION, "starting poll");
 }
 
 function createPoll(ownerId, question) {
@@ -550,12 +526,17 @@ function createPoll(ownerId, question) {
       user.state = States.POLL_INPUT_CHOICE;
       user.save(function(err, savedUser) {
         if (err) { return console.error(err); }
-        if (savedUser.buildingPollId != newPoll.id) {
-          console.error("[ERROR] User buildingPollId: %s after creating poll is not %s.", savedUser.buildingPollId, newPoll.id);
+        if (savedUser.state != States.POLL_INPUT_CHOICE) {
+          console.error("[ERROR] State of user: %s after creating poll is not POLL_INPUT_CHOICE.", savedUser.state);
         }
+        sendTextMessage(ownerId, "Cool. What's the first poll choice?");
       });
     });
   });
+}
+
+function createChoice(uid, choice) {
+  console.log("[POLL] Choice created by User %s", uid);
 }
 
 function sendHelpMessage(uid) {

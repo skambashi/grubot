@@ -37,3 +37,11 @@ exports.get_all_polls = function(callback) {
   // callback signature for get_all_polls: function (err, polls)
   Poll.find(callback);
 };
+
+exports.add_choice = function(choiceName, pollId, callback) {
+  var newChoice = new Choice({
+    text: choiceName,
+    poll_id: pollId
+  });
+  newChoice.save(callback);
+};
