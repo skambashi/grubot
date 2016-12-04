@@ -469,7 +469,7 @@ function sendPostSuccess(user, post) {
   // }];
   sendButtonMessage(user.id, "Your message has been posted.", button);
   // sendQuickReply(user.id, "Your message has been posted.", viewPostReply);
-  sendTextMessageChannel(user.first_name + " posted a message: " + post);
+  sendTextMessageChannel(user.id, user.name + " posted a message: " + post);
 }
 
 function promptPost(uid) {
