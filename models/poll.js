@@ -14,7 +14,7 @@ var choiceSchema = mongoose.Schema({
 
 var pollSchema = mongoose.Schema({
   owner: String,
-  text: String,
+  text: String
 });
 
 var Poll = mongoose.model('Poll', pollSchema);
