@@ -357,9 +357,9 @@ function receivedPostback(event) {
       sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
         "What can I do for you?");
       break;
-    case "VIEW_POSTS":
-      viewPosts(senderID);
-      break;
+    // case "VIEW_POSTS":
+    //   viewPosts(senderID);
+    //   break;
     case "DELETE_POST":
       deletePost(senderID, payload.postID);
       break;
@@ -455,21 +455,22 @@ function postMessage(uid, message) {
 
 function sendPostSuccess(user, post) {
   console.log("[SEND_POST_SUCCESS] Sending post success.");
-  var button = [{
-    type: "postback",
-    title: "View posts",
-    payload: JSON.stringify({
-      type: "VIEW_POSTS"
-    })
-  }];
-  // var viewPostReply = [{
-  //   "content_type": "text",
-  //   "title": "View posts",
-  //   "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+  // var button = [{
+  //   type: "postback",
+  //   title: "View posts",
+  //   payload: JSON.stringify({
+  //     type: "VIEW_POSTS"
+  //   })
   // }];
-  sendButtonMessage(user.id, "Your message has been posted.", button);
-  // sendQuickReply(user.id, "Your message has been posted.", viewPostReply);
-  sendTextMessageChannel(user.id, user.name + " posted a message: " + post);
+  var viewPostOption = [{
+    "content_type": "text",
+    "title": "View posts",
+    "payload": ""
+  }];
+  // sendButtonMessage(user.id, "Your message has been posted.", button);
+  viewPosts(user.id);
+  sendQuickReplyChannel(user.id, user.name + " posted a message.", viewPostOption);
+  // sendTextMessageChannel(user.id, user.name + " posted a message: " + post);
 }
 
 function promptPost(uid) {
@@ -839,20 +840,33 @@ function sendReceiptMessage(recipientId) {
  * Send a message with Quick Reply buttons.
  *
  */
-function sendQuickReply(recipientId, quickReplies) {
+function sendQuickReply(recipientId, messageText, quickReplies) {
   var messageData = {
     recipient: {
       id: recipientId
     },
     message: {
-      text: "What's your favorite movie genre?",
+      text: messageText,
       quick_replies: quickReplies
     }
   };
 
   callSendAPI(messageData);
 }
-
+/*
+ * Send a message with Quick Reply buttons to all users in a channel.
+ *
+ */
+function sendQuickReplyChannel(senderID, messageText, quickReplies) {
+  Users.get_other_users(senderID, function(err, users) {
+    if (err) { return console.error(err); }
+    if (users) {
+      for (var i = 0; i < users.length; i++) {
+        sendQuickReply(users[i].id, messageText, quickReplies);
+      }
+    }
+  });
+}
 /*
  * Send a read receipt to indicate the message has been read
  *
