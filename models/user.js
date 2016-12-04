@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var userSchema = mongoose.Schema({ id: String });
 var User = mongoose.model('User', userSchema);
 
+// TODO: check if user already exists
 exports.add_user = function(user_id) {
   var newUser = new User({ id: user_id });
   newUser.save(function(err, newUser) {

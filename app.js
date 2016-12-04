@@ -361,7 +361,6 @@ function receivedPostback(event) {
 
   if (payload === "NEW_USER") {
     registerUser(senderID);
-    // TODO: GET THE USERS NAME
     sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
       "What can I do for you?");
   } else {
@@ -374,6 +373,7 @@ function receivedPostback(event) {
 }
 
 function registerUser(uid) {
+  // TODO: update user model to inclue name, etc.
   request({
     uri: 'https://graph.facebook.com/v2.6/' + uid,
     qs: {
@@ -389,7 +389,7 @@ function registerUser(uid) {
     }
   });
   Users.add_user(uid);
-  sendTextMessageChannel(uid, uid + 'has joined!');
+  sendTextMessageChannel(uid, uid + ' has joined!');
   console.log("[REGISTER_USER] Registered new user %d. ", uid);
 
   // TODO: Count isn't updated right away due to async push to mongodb.
