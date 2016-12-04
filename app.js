@@ -25,7 +25,8 @@ app.use(express.static('public'));
 //==============================================================================
 // DATABASE
 //==============================================================================
-var mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+    autoIncrement = require('mongoose-auto-increment');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
 var db = mongoose.connection;
@@ -34,6 +35,7 @@ db.once('open', function() {
   // we're connected!
   console.log("[DB] Successfully connected to database.");
 });
+autoIncrement.initialize(db);
 
 var Users = require('./models/user.js');
 
@@ -400,8 +402,6 @@ function registerUser(uid) {
         if (!error && response.statusCode === 200) {
           body = JSON.parse(body);
           console.log('[GRAPH_API] retrieved user register info.', body);
-          console.log('[TEST] %s %s | %s | %s.', body.first_name, body.last_name,
-            body.timezone, body.gender);
           Users.add_user(uid, body.first_name, body.last_name,
             body.timezone, body.gender, function(err, newUser) {
               if (err) { return console.error(err); }

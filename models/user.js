@@ -13,7 +13,6 @@ userSchema.virtual('name').get(function () {
 
 var User = mongoose.model('User', userSchema);
 
-// TODO: check if user already exists
 exports.add_user = function(uid, fn, ln, tz, gd, callback) {
   var newUser = new User({
     id: uid,
