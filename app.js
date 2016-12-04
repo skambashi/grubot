@@ -22,14 +22,16 @@ const MESSAGE_NOT_SENT = 1545041;
 var app = express();
 app.set('port', process.env.PORT || 5000);
 app.set('view engine', 'ejs');
-app.use(bodyParser.json({ verify: verifyRequestSignature }));
+app.use(bodyParser.json({
+  verify: verifyRequestSignature
+}));
 app.use(express.static('public'));
 
 //==============================================================================
 // DATABASE
 //==============================================================================
 var mongoose = require('mongoose'),
-    autoIncrement = require('mongoose-auto-increment');
+  autoIncrement = require('mongoose-auto-increment');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
 var db = mongoose.connection;
@@ -90,7 +92,7 @@ if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
  */
 app.get('/webhook', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
-      req.query['hub.verify_token'] === VALIDATION_TOKEN) {
+    req.query['hub.verify_token'] === VALIDATION_TOKEN) {
     console.log("[VALIDATION] Validating webhook");
     res.status(200).send(req.query['hub.challenge']);
   } else {
@@ -106,7 +108,7 @@ app.get('/webhook', function(req, res) {
  * https://developers.facebook.com/docs/messenger-platform/product-overview/setup#subscribe_app
  *
  */
-app.post('/webhook', function (req, res) {
+app.post('/webhook', function(req, res) {
   var data = req.body;
 
   // Make sure this is a page subscription
@@ -189,8 +191,8 @@ function verifyRequestSignature(req, res, buf) {
     var signatureHash = elements[1];
 
     var expectedHash = crypto.createHmac('sha1', APP_SECRET)
-                        .update(buf)
-                        .digest('hex');
+      .update(buf)
+      .digest('hex');
 
     if (signatureHash != expectedHash) {
       throw new Error("Couldn't validate the request signature.");
@@ -249,8 +251,10 @@ function receivedMessage(event) {
     return;
   }
 
-  Users.get_user(senderID, function (err, user){
-    if (err) { return console.error(err); }
+  Users.get_user(senderID, function(err, user) {
+    if (err) {
+      return console.error(err);
+    }
     if (user) { // USER CASE
       if (messageText) { // IF TEXT MESSAGE
         switch (user.state) {
@@ -290,15 +294,15 @@ function receivedMessage(event) {
             registerUser(senderID);
             break;
           default:
-            sendTextMessage(senderID, "You are not subscribed to any channels. "+
+            sendTextMessage(senderID, "You are not subscribed to any channels. " +
               "Please subscribe before sending a message.");
         }
       } else if (messageAttachments) { // IF NON-TEXT MESSAGE
-        sendTextMessage(senderID, "You are not subscribed to any channels. "+
+        sendTextMessage(senderID, "You are not subscribed to any channels. " +
           "Please subscribe before sending a message.");
       }
-    });
-  }
+    }
+  });
 }
 
 /*
@@ -347,7 +351,7 @@ function receivedPostback(event) {
     case "NEW_USER":
       registerUser(senderID);
       sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
-      "What can I do for you?");
+        "What can I do for you?");
       break;
     case "VIEW_POSTS":
       viewPosts(senderID);
@@ -362,8 +366,10 @@ function receivedPostback(event) {
 }
 
 function registerUser(uid) {
-  Users.get_user(uid, function (err, user){
-    if (err) { return console.error(err); }
+  Users.get_user(uid, function(err, user) {
+    if (err) {
+      return console.error(err);
+    }
     if (user) {
       console.log("[WARNING] Can't add user %s that is already registered.", uid);
       sendTextMessage(uid, "You are already subscribed to a channel.");
@@ -371,17 +377,20 @@ function registerUser(uid) {
       request({
         uri: 'https://graph.facebook.com/v2.6/' + uid,
         qs: {
-              access_token: PAGE_ACCESS_TOKEN,
-              fields: 'first_name,last_name,locale,timezone,gender'
-            },
+          access_token: PAGE_ACCESS_TOKEN,
+          fields: 'first_name,last_name,locale,timezone,gender'
+        },
         method: 'GET'
-      }, function (error, response, body) {
+      }, function(error, response, body) {
         if (!error && response.statusCode === 200) {
           body = JSON.parse(body);
           console.log('[GRAPH_API] retrieved user register info.', body);
           Users.add_user(uid, DEFAULT_STATE, body.first_name, body.last_name,
-            body.timezone, body.gender, function(err, newUser) {
-              if (err) { return console.error(err); }
+            body.timezone, body.gender,
+            function(err, newUser) {
+              if (err) {
+                return console.error(err);
+              }
               console.log("[REGISTER_USER] %s | %s | %s || has been registered.",
                 newUser.name, newUser.id, newUser.gender);
               sendTextMessage(uid, "You have joined the channel.");
@@ -404,11 +413,15 @@ function registerUser(uid) {
 }
 
 function removeUser(uid) {
-  Users.get_user(uid, function (err, user){
-    if (err) { return console.error(err); }
+  Users.get_user(uid, function(err, user) {
+    if (err) {
+      return console.error(err);
+    }
     if (user) {
       Users.remove_user(uid, function(err) {
-        if (err) { return console.error(err); }
+        if (err) {
+          return console.error(err);
+        }
         console.log("[REMOVE_USER] Successfully removed user %s.", uid);
         sendTextMessage(uid, "You have left the channel.");
         sendTextMessageChannel(uid, user.name + " left the channel.");
@@ -422,15 +435,21 @@ function removeUser(uid) {
 
 function postMessage(uid, message) {
   Users.get_user(uid, function(err, user) {
-    if (err) { return console.error(err); }
+    if (err) {
+      return console.error(err);
+    }
     Posts.add_post(user.first_name, message, function(err) {
-      if (err) { return console.error(err); }
+      if (err) {
+        return console.error(err);
+      }
       sendPostSuccess(user, message);
       console.log("[POST] Added Post by User %s: '%s'", uid, message);
     });
     user.state = DEFAULT_STATE;
     user.save(function(err, savedUser) {
-      if (err) { return console.error(err); }
+      if (err) {
+        return console.error(err);
+      }
       if (savedUser.state != DEFAULT_STATE) {
         console.error("[ERROR] State of user: %s after posting message is not DEFAULT_STATE.", savedUser.state);
       }
@@ -440,10 +459,10 @@ function postMessage(uid, message) {
 
 function sendPostSuccess(user, post) {
   var button = [{
-        type: "postback",
-        title: "View posts",
-        payload: "VIEW_POSTS"
-      }];
+    type: "postback",
+    title: "View posts",
+    payload: "VIEW_POSTS"
+  }];
   sendButtonMessage(user.id, "Your message has been posted!", button);
   sendTextMessageChanngel(user.first_name + " posted a message: " + post);
 }
@@ -453,10 +472,14 @@ function promptPost(uid) {
   sendTextMessage(uid, "What would you like to post to the channel?");
 
   Users.get_user(uid, function(err, user) {
-    if (err) { return console.error(err); }
+    if (err) {
+      return console.error(err);
+    }
     user.state = POSTING_STATE;
     user.save(function(err, savedUser) {
-      if (err) { return console.error(err); }
+      if (err) {
+        return console.error(err);
+      }
       if (savedUser.state != POSTING_STATE) {
         console.error("[ERROR] State of user: %s after posting message is not POSTING_STATE.", savedUser.state);
       }
@@ -544,8 +567,10 @@ function receivedAccountLink(event) {
  *
  */
 function sendTextMessageChannel(senderID, messageText) {
-  Users.get_other_users(senderID, function (err, users) {
-    if (err) { return console.error(err); }
+  Users.get_other_users(senderID, function(err, users) {
+    if (err) {
+      return console.error(err);
+    }
     if (users) {
       for (var i = 0; i < users.length; i++) {
         var messageData = {
@@ -772,13 +797,13 @@ function sendGenericMessage(recipientId) {
  */
 function sendReceiptMessage(recipientId) {
   // Generate a random receipt ID as the API requires a unique ID
-  var receiptId = "order" + Math.floor(Math.random()*1000);
+  var receiptId = "order" + Math.floor(Math.random() * 1000);
 
   var messageData = {
     recipient: {
       id: recipientId
     },
-    message:{
+    message: {
       attachment: {
         type: "template",
         payload: {
@@ -843,23 +868,19 @@ function sendQuickReply(recipientId) {
     },
     message: {
       text: "What's your favorite movie genre?",
-      quick_replies: [
-        {
-          "content_type":"text",
-          "title":"Action",
-          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
-        },
-        {
-          "content_type":"text",
-          "title":"Comedy",
-          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
-        },
-        {
-          "content_type":"text",
-          "title":"Drama",
-          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
-        }
-      ]
+      quick_replies: [{
+        "content_type": "text",
+        "title": "Action",
+        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+      }, {
+        "content_type": "text",
+        "title": "Comedy",
+        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
+      }, {
+        "content_type": "text",
+        "title": "Drama",
+        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+      }]
     }
   };
 
@@ -932,7 +953,7 @@ function sendAccountLinking(recipientId) {
         payload: {
           template_type: "button",
           text: "Welcome. Link your account.",
-          buttons:[{
+          buttons: [{
             type: "account_link",
             url: SERVER_URL + "/authorize"
           }]
@@ -956,11 +977,13 @@ function sendAccountLinking(recipientId) {
 function callSendAPI(messageData) {
   request({
     uri: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: { access_token: PAGE_ACCESS_TOKEN },
+    qs: {
+      access_token: PAGE_ACCESS_TOKEN
+    },
     method: 'POST',
     json: messageData
 
-  }, function (error, response, body) {
+  }, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       var recipientId = body.recipient_id;
       var messageId = body.message_id;
