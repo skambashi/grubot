@@ -635,10 +635,16 @@ function viewPolls(uid) {
         buttons: buttons
       }];
       sendGenericMessage(uid, elements);
-    } else if (listItems.length > 4) {
-      sendListMessage(uid, listItems.slice(-4), true);
     } else {
-      sendListMessage(uid, listItems, true);
+      while (true) {
+        if (listItems.length > 4) {
+          sendListMessage(uid, listItems.slice(0, 4), true);
+          listItems = listItems.slice(4);
+        } else {
+          sendListMessage(uid, listItems, true);
+          return;
+        }
+      }
     }
   });
 }
@@ -657,7 +663,7 @@ function viewPoll(uid, pollId) {
           title: "Delete poll",
           payload: JSON.stringify({
             type: "DELETE_POLL",
-            pollID: poll._id // check this
+            pollID: poll.id // check this
           })
         }]
       }];
@@ -669,8 +675,8 @@ function viewPoll(uid, pollId) {
             title: "Vote",
             payload: JSON.stringify({
               type: "POLL_VOTE",
-              pollID: poll._id, // check this
-              choiceID: choice._id // check this
+              pollID: poll.id, // check this
+              choiceID: choice.id // check this
             })
           }]
         };
