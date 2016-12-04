@@ -9,13 +9,12 @@ var voteSchema = mongoose.Schema({
 
 var choiceSchema = mongoose.Schema({
   text: String,
-  votes: [voteSchema]
+  poll_id: String
 });
 
 var pollSchema = mongoose.Schema({
   owner: String,
   text: String,
-  choices: [choiceSchema]
 });
 
 var Poll = mongoose.model('Poll', pollSchema);
