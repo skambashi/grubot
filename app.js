@@ -249,6 +249,12 @@ function receivedMessage(event) {
     // keywords and send back the corresponding example. Otherwise, just echo
     // the text we received.
     switch (messageText) {
+      case 'Subscribe':
+        registerUser(senderID);
+        break;
+      case 'Unsubscribe':
+        removeUser(senderID);
+        break;
       case 'TEST image':
         sendImageMessage(senderID);
         break;
@@ -358,7 +364,6 @@ function receivedPostback(event) {
     // TODO: GET THE USERS NAME
     sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
       "What can I do for you?");
-    sendTextMessageChannel(senderID, senderID + " has joined!");
   } else {
     console.log("Received postback for user %d and page %d with payload '%s' " +
       "at %d", senderID, recipientID, payload, timeOfPostback);
@@ -370,6 +375,7 @@ function receivedPostback(event) {
 
 function registerUser(uid) {
   Users.add_user(uid);
+  sendTextMessageChannel(uid, uid + " has joined!");
   console.log("[REGISTER_USER] Registered new user %d via Welcome Screen. ", uid);
 
   // TODO: Count isn't updated right away due to async push to mongodb.
@@ -378,6 +384,12 @@ function registerUser(uid) {
   //   console.log("[REGISTER_USER] Registered user count: %d.", count);
   // });
 
+}
+
+function removeUser(uid) {
+  Users.remove_user(uid);
+  sendTextMessageChannel(uid, uid + " left the channel.");
+  console.log("[REMOVE_USER] Removed user %d.", uid);
 }
 
 /*
@@ -895,7 +907,9 @@ function callSendAPI(messageData) {
     } else {
       // clean up users that have deleted bot's convo
       if (body.error.error_subcode === MESSAGE_NOT_SENT) {
-        Users.remove_user(JSON.parse(response.request.body).recipient.id);
+        var uid = JSON.parse(response.request.body).recipient.id;
+        console.log("[CLEANUP_DELETED_CONVO] Removing unable to reach user %d", uid);
+        removeUser(uid);
       }
       console.error("[SEND_API|ERROR] Failed calling Send API", response.statusCode, response.statusMessage, body.error);
     }
