@@ -592,12 +592,12 @@ function publishPoll(uid) {
     var pollId = user.buildingPollId;
     sendTextMessage(uid, "Your poll is live!");
     // viewPolls(uid);
-    viewPoll(pollId);
+    viewPoll(uid, pollId);
     sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
-    // user.buildingPollId = "";
-    // user.save(function(err, savedUser) {
-    //   if (err) { console.error(err); }
-    // });
+    user.buildingPollId = "";
+    user.save(function(err, savedUser) {
+      if (err) { console.error(err); }
+    });
   });
 }
 
