@@ -18,6 +18,7 @@ var pollSchema = mongoose.Schema({
 });
 
 var Poll = mongoose.model('Poll', pollSchema);
+var Choice = mongoose.model('Choice', choiceSchema);
 
 exports.add_poll = function(pollOwner, pollQuestion, callback) {
   // callback signature for add_poll : function(err, newPoll)
