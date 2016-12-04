@@ -437,7 +437,7 @@ function postMessage(uid, message) {
   console.log("[POST] Attempting to create post '%s' from User %s", message, uid);
   Users.get_user(uid, function(err, user) {
     if (err) { return console.error(err); }
-    Posts.add_post(user.first_name, message, function(err, newPost) {
+    Posts.add_post(user.name, message, function(err, newPost) {
       if (err) { return console.error(err); }
       console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
       sendPostSuccess(user, newPost.text);
@@ -500,7 +500,7 @@ function viewPosts(uid) {
           type: "postback",
           payload: JSON.stringify({
             type: "DELETE_POST",
-            postID: post._id.oid
+            postID: post.id
           })
         }]
       };
