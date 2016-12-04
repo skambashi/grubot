@@ -398,12 +398,14 @@ function registerUser(uid) {
       }, function (error, response, body) {
         if (!error && response.statusCode === 200) {
           console.log('[GRAPH_API] retrieved user register info.', body);
+          console.log('[TEST] %s %s | %s | %s.', body.first_name, body.last_name,
+            body.timezone, body.gender);
           Users.add_user(uid, body.first_name, body.last_name,
             body.timezone, body.gender, function(err, newUser) {
               if (err) { return console.error(err); }
               console.log("[REGISTER_USER] %s | %s | %s : has been registered.",
                 newUser.name, newUser.id, newUser.gender);
-              sendTextMessageChannel(uid, user.name + ' has joined!');
+              sendTextMessageChannel(uid, newUser.name + ' has joined!');
             });
         } else {
           console.error("[ERROR] Failed calling Graph API.", response.statusCode, response.statusMessage, body.error);
