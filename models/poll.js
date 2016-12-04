@@ -34,6 +34,10 @@ exports.remove_poll = function(p_id, callback) {
   Poll.remove({ _id: new ObjectID(p_id) }, callback);
 };
 
+exports.get_poll = function(p_id, callback) {
+  Poll.findOne({ _id: new ObjectID(p_id) }, callback);
+};
+
 exports.get_all_polls = function(callback) {
   // callback signature for get_all_polls: function (err, polls)
   Poll.find(callback);
@@ -45,4 +49,9 @@ exports.add_choice = function(choiceName, pollId, callback) {
     poll_id: pollId
   });
   newChoice.save(callback);
+};
+
+exports.get_poll_choices = function(pollId, callback) {
+  // callback signature for get_poll_choices: function(err, choices)
+  Choice.find({ poll_id: pollId }, callback);
 };

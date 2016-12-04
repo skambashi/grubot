@@ -462,7 +462,7 @@ function onPostSuccess(user, post) {
     title: 'View posts',
     payload: ''
   }];
-  sendTextMessage(user.id, "Got it. Here's the list of current posts:");
+  sendTextMessage(user.id, "Got it.");
   viewPosts(user.id);
   sendQuickReplyChannel(user.id, user.name + " posted a message.", viewPostsOption);
 }
@@ -510,9 +510,9 @@ function viewPosts(uid) {
         };
       });
       if (listItems.length > 4) {
-        sendListMessage(uid, listItems.slice(-4));
+        sendListMessage(uid, listItems.slice(-4), true);
       } else {
-        sendListMessage(uid, listItems);
+        sendListMessage(uid, listItems, true);
       }
     }
   });
@@ -584,24 +584,63 @@ function continuePollInput(uid) {
 function publishPoll(uid) {
   Users.set_user_state(uid, States.DEFAULT, 'publishing poll');
   Users.get_user(uid, function(err, user) {
-    user.buildingPollId = "";
-    user.save(function(err, savedUser) {
-      if (err) { console.error(err); }
-    });
     var viewPollsOption = [{
       content_type: 'text',
       title: 'View polls',
       payload: ''
     }];
-    sendTextMessage(uid, "Your poll is live! Here's a list of polls in this channel:");
-    viewPolls(uid);
+    sendTextMessage(uid, "Your poll is live!");
+    // viewPolls(uid);
+    viewPoll(user.buildingPollId);
     sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
+    user.buildingPollId = "";
+    user.save(function(err, savedUser) {
+      if (err) { console.error(err); }
+    });
   });
 }
 
 function viewPolls(uid) {
   sendTextMessage(uid, "no u");
 }
+
+function viewPoll(uid, pollId) {
+  Polls.get_poll(pollId, function(err, poll) {
+    if (err) { console.error(err); }
+    Polls.get_poll_choices(pollId, function(err, choices) {
+      var pollItem = [{
+        title: poll.text,
+        subtitle: 'asked by ' + poll.owner,
+        buttons: [{
+          type: "postback",
+          title: "Delete",
+          payload: JSON.stringify({
+            type: "DELETE_POLL",
+            pollID: poll._id // check this
+          })
+        }]
+      }];
+      var choiceItems = choices.map(function(choice) {
+        return {
+          title: choice.text,
+          buttons: [{
+            type: "postback",
+            title: "Vote",
+            payload: JSON.stringify({
+              type: "POLL_VOTE",
+              pollID: poll._id, // check this
+              choiceID: choice._id // check this
+            })
+          }]
+        };
+      });
+      var listItems = pollItem.concat(choiceItems);
+
+      sendListMessage(uid, listItems);
+    });
+  });
+}
+
 
 function sendHelpMessage(uid) {
   console.log("[HELP] sending Help menu to user %s", uid);
@@ -774,7 +813,8 @@ function sendButtonMessage(recipientId, messageText, messageButtons) {
  * Send a list message using the Send API.
  *
  */
-function sendListMessage(recipientId, listItems) {
+function sendListMessage(recipientId, listItems, isCompact=false) {
+  var topElementStyle = isCompact ? 'compact' : '';
   var messageData = {
     recipient: {
       id: recipientId
@@ -784,7 +824,7 @@ function sendListMessage(recipientId, listItems) {
         type: "template",
         payload: {
           template_type: "list",
-          top_element_style: "compact",
+          top_element_style: topElementStyle,
           elements: listItems
         }
       }
