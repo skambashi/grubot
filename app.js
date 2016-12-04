@@ -511,8 +511,10 @@ function viewPosts(uid) {
 }
 
 function deletePost(uid, postID) {
-  console.log("[POST] Post %s deleted by User %s", postID, uid);
-  Posts.remove_post(postID);
+  Posts.remove_post(postID, function(err) {
+    if (err) { console.error(err); }
+    console.log("[POST] Post %s deleted by User %s", postID, uid);
+  });
 }
 
 /*
