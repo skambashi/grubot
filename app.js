@@ -462,7 +462,7 @@ function onPostSuccess(user, post) {
     title: 'View posts',
     payload: ''
   }];
-  sendTextMessage(user.id, "Posted! Here's the current list of posts:");
+  sendTextMessage(user.id, "Got it. Here's the list of current posts:");
   viewPosts(user.id);
   sendQuickReplyChannel(user.id, user.name + " posted a message.", viewPostsOption);
 }
@@ -593,7 +593,7 @@ function publishPoll(uid) {
       title: 'View polls',
       payload: ''
     }];
-    sendTextMessage(uid, "Your poll is live! Check out other polls in this channel:");
+    sendTextMessage(uid, "Your poll is live! Here's a list of polls in this channel:");
     viewPolls(uid);
     sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
   });
