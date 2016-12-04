@@ -250,9 +250,11 @@ function receivedMessage(event) {
     // the text we received.
     switch (messageText) {
       case 'Subscribe':
+      case 'subscribe':
         registerUser(senderID);
         break;
       case 'Unsubscribe':
+      case 'unsubscribe':
         removeUser(senderID);
         break;
       case 'TEST image':
@@ -381,7 +383,6 @@ function receivedPostback(event) {
 }
 
 function registerUser(uid) {
-  // TODO: update user model to inclue name, etc.
   Users.get_user(uid, function (err, user){
     if (err) { return console.error(err); }
     if (user) {
@@ -416,7 +417,7 @@ function registerUser(uid) {
     }
   });
 
-  // TODO: Count isn't updated right away due to async push to mongodb.
+  // Count isn't updated right away due to async push to mongodb.
   // Need to wait a bit to call Users.count to get right number.
   // Users.count(function(err, count){
   //   if (err) { return console.error(err); }
@@ -958,12 +959,14 @@ function callSendAPI(messageData) {
         console.log("[SEND_API] USER_ID: %s", recipientId);
       }
     } else {
+      // TODO: commented this out since it was spamming for some reason
+      // Scroll up until you see "CLEANUP_DELETED_CONVO" in logs
       // clean up users that have deleted bot's convo
-      if (body.error.error_subcode === MESSAGE_NOT_SENT) {
-        var uid = JSON.parse(response.request.body).recipient.id;
-        console.log("[CLEANUP_DELETED_CONVO] Removing unable to reach user %d", uid);
-        removeUser(uid);
-      }
+      // if (body.error.error_subcode === MESSAGE_NOT_SENT) {
+      //   var uid = JSON.parse(response.request.body).recipient.id;
+      //   console.log("[CLEANUP_DELETED_CONVO] Removing unable to reach user %d", uid);
+      //   removeUser(uid);
+      // }
       console.error("[SEND_API|ERROR] Failed calling Send API", response.statusCode, response.statusMessage, body.error);
     }
   });
