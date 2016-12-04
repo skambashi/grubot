@@ -349,7 +349,6 @@ function receivedPostback(event) {
   // The 'payload' param is a developer-defined field which is set in a postback
   // button for Structured Messages.
   var payload = JSON.parse(event.postback.payload);
-  console.log("[DEBUG] checking payload", payload);
 
   switch (payload.type) {
     case "NEW_USER":
@@ -366,7 +365,7 @@ function receivedPostback(event) {
 
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
-        "at %d", senderID, recipientID, payload, timeOfPostback);
+        "at %d", senderID, recipientID, payload.type, timeOfPostback);
       // When a postback is called, we'll send a message back to the sender to
       // let them know it was successful
       sendTextMessage(senderID, "Postback called");
@@ -474,7 +473,7 @@ function sendPostSuccess(user, post) {
 
 function promptPost(uid) {
   console.log("[POST] Request to post from User %s", uid);
-  sendTextMessage(uid, "What would you like to post to the channel?");
+  sendTextMessage(uid, "What message would you like to post?");
 
   Users.get_user(uid, function(err, user) {
     if (err) { return console.error(err); }
@@ -512,6 +511,7 @@ function viewPosts(uid) {
 
 function deletePost(uid, postID) {
   console.log("[POST] Post %d deleted by User %s", postID, uid);
+  console.log(postID);
   Posts.remove_post(postID);
 }
 
