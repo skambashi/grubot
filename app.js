@@ -614,7 +614,7 @@ function viewPolls(uid) {
           payload: JSON.stringify({
             type: "VIEW_POLL",
             pollID: poll._id
-          });
+          })
         }]
       };
     });
