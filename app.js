@@ -268,12 +268,12 @@ function receivedMessage(event) {
               case 'unsubscribe':
                 removeUser(senderID);
                 break;
-              case 'Pin a post':
-              case 'pin a post':
+              case 'Pin post':
+              case 'pin post':
                 promptPost(senderID);
                 break;
-              case 'View pinned posts':
-              case 'view pinned posts':
+              case 'View posts':
+              case 'view posts':
                 viewPosts(senderID);
                 break;
               default:
@@ -350,9 +350,9 @@ function receivedPostback(event) {
 
   // The 'payload' param is a developer-defined field which is set in a postback
   // button for Structured Messages.
-  var payload = event.postback.payload;
+  var payload = JSON.parse(event.postback.payload);
 
-  switch (payload) {
+  switch (payload.type) {
     case "NEW_USER":
       registerUser(senderID);
       sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
@@ -360,6 +360,9 @@ function receivedPostback(event) {
       break;
     case "VIEW_POSTS":
       viewPosts(senderID);
+    case "DELETE_POST":
+      deletePost(senderID, payload.postID);
+
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d", senderID, recipientID, payload, timeOfPostback);
@@ -453,9 +456,17 @@ function sendPostSuccess(user, post) {
   var button = [{
     type: "postback",
     title: "View posts",
-    payload: "VIEW_POSTS"
+    payload: {
+      type: "VIEW_POSTS"
+    }
   }];
-  sendButtonMessage(user.id, "Your message has been posted!", button);
+  // var viewPostReply = [{
+  //   "content_type": "text",
+  //   "title": "View posts",
+  //   "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+  // }];
+  sendButtonMessage(user.id, "Your message has been posted.", button);
+  // sendQuickReply(user.id, "Your message has been posted.", viewPostReply);
   sendTextMessageChannel(user.first_name + " posted a message: " + post);
 }
 
@@ -476,8 +487,29 @@ function promptPost(uid) {
 }
 
 function viewPosts(uid) {
-  // TODO: this
-  sendTextMessage(uid, "no u");
+  console.log("[POST] View all posts by user %s", uid);
+  Posts.get_all_posts(function(err, posts) {
+    if (err) { console.error(err); }
+    var listItems = posts.map(function(post) {
+      return {
+        title: post.text,
+        subtitle: post.owner,
+        buttons: [{
+          title: "Delete",
+          type: "postback",
+          payload: {
+            type: "DELETE_POST",
+            postID: post.id
+          }
+        }]
+      };
+    });
+  });
+}
+
+function deletePost(uid, postID) {
+  console.log("[POST] Post %d deleted by User %s", postID, uid);
+  Posts.remove_post(postID);
 }
 
 /*
@@ -639,6 +671,30 @@ function sendButtonMessage(recipientId, messageText, messageButtons) {
 }
 
 /*
+ * Send a list message using the Send API.
+ *
+ */
+function sendListMessage(recipientId, listItems) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "list",
+          topElementStyle: "compact",
+          elements: listItems
+        }
+      }
+    }
+  };
+
+  callSendAPI(messageData);
+}
+
+/*
  * Send a Structured Message (Generic Message type) using the Send API.
  *
  */
@@ -759,26 +815,14 @@ function sendReceiptMessage(recipientId) {
  * Send a message with Quick Reply buttons.
  *
  */
-function sendQuickReply(recipientId) {
+function sendQuickReply(recipientId, quickReplies) {
   var messageData = {
     recipient: {
       id: recipientId
     },
     message: {
       text: "What's your favorite movie genre?",
-      quick_replies: [{
-        "content_type": "text",
-        "title": "Action",
-        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
-      }, {
-        "content_type": "text",
-        "title": "Comedy",
-        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
-      }, {
-        "content_type": "text",
-        "title": "Drama",
-        "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
-      }]
+      quick_replies: quickReplies
     }
   };
 
