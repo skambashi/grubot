@@ -501,7 +501,7 @@ function viewPosts(uid) {
           type: "postback",
           payload: JSON.stringify({
             type: "DELETE_POST",
-            postID: post._id
+            postID: post._id.oid
           })
         }]
       };
