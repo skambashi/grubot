@@ -488,7 +488,7 @@ function promptPost(uid) {
 }
 
 function viewPosts(uid) {
-  console.log("[POST] View all posts by user %s", uid);
+  console.log("[POST] User %s viewing all posts", uid);
   Posts.get_all_posts(function(err, posts) {
     if (err) { console.error(err); }
     var listItems = posts.map(function(post) {
@@ -686,7 +686,7 @@ function sendListMessage(recipientId, listItems) {
         type: "template",
         payload: {
           template_type: "list",
-          topElementStyle: "compact",
+          top_element_style: "compact",
           elements: listItems
         }
       }
