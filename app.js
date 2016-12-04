@@ -374,9 +374,23 @@ function receivedPostback(event) {
 }
 
 function registerUser(uid) {
+  request({
+    uri: 'https://graph.facebook.com/v2.6/' + uid,
+    qs: {
+          access_token: PAGE_ACCESS_TOKEN,
+          fields: 'first_name,last_name,locale,timezone,gender'
+        },
+    method: 'GET'
+  }, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      console.log('[GRAPH_API] retrieved user register info', body);
+    } else {
+      console.error("[GRAPH_API|ERROR] Failed calling Graph API", response.statusCode, response.statusMessage, body.error);
+    }
+  });
   Users.add_user(uid);
-  sendTextMessageChannel(uid, uid + " has joined!");
-  console.log("[REGISTER_USER] Registered new user %d via Welcome Screen. ", uid);
+  sendTextMessageChannel(uid, uid + 'has joined!');
+  console.log("[REGISTER_USER] Registered new user %d. ", uid);
 
   // TODO: Count isn't updated right away due to async push to mongodb.
   // Need to wait a bit to call Users.count to get right number.
