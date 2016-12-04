@@ -38,6 +38,7 @@ db.once('open', function() {
 
 var Users = require('./models/user.js');
 var Posts = require('./models/post.js');
+var Polls = require('./models/poll.js');
 var States = require('./states.js');
 
 //==============================================================================
@@ -540,9 +541,9 @@ function newPoll(uid) {
 }
 
 function createPoll(ownerId, question) {
-  console.log("[POLL] User %s create poll", ownerId);
   Polls.add_poll(owner, question, function(err, newPoll) {
     if (err) { console.error(err); }
+    console.log("[POLL] Poll %s created by User %s", newPoll.id, ownerId);
     Users.get_user(ownerId, function(err, user) {
       if (err) { console.error(err); }
       user.buildingPollId = newPoll.id;
