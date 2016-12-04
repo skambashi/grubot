@@ -240,14 +240,15 @@ function receivedMessage(event) {
     console.log("[RECEIVED_MESSAGE] ECHO | Received echo for message %s and app %d with metadata %s",
       messageId, appId, metadata);
     return;
-  } else if (quickReply) {
-    var quickReplyPayload = quickReply.payload;
-    console.log("[RECEIVED_MESSAGE] QUICKREPLY | Quick reply for message %s with payload %s",
-      messageId, quickReplyPayload);
-
-    sendTextMessage(senderID, "Quick reply tapped");
-    return;
   }
+  // else if (quickReply) {
+  //   var quickReplyPayload = quickReply.payload;
+  //   console.log("[RECEIVED_MESSAGE] QUICKREPLY | Quick reply for message %s with payload %s",
+  //     messageId, quickReplyPayload);
+  //
+  //   sendTextMessage(senderID, "Quick reply tapped");
+  //   return;
+  // }
 
   Users.get_user(senderID, function(err, user) {
     if (err) { return console.error(err); }
