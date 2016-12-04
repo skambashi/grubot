@@ -53,7 +53,7 @@ exports.get_other_users = function(user_id, callback) {
 exports.set_user_state = function(user_id, state, action) {
   exports.get_user(user_id, function(err, user) {
     user.state = state;
-    user.save(function(err, saveduser) {
+    user.save(function(err, savedUser) {
       if (err) { return console.error(err) }
       if (savedUser.state != state) {
         console.error("[ERROR] State of user: %s after %s is not %s", savedUser.state, action, state);
