@@ -434,15 +434,15 @@ function postMessage(uid, message) {
       console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
       sendPostSuccess(user, newPost.text);
     });
-    user.state = States.DEFAULT;
-    user.save(function(err, savedUser) {
-      if (err) { return console.error(err); }
-      if (savedUser.state != States.DEFAULT) {
-        console.error("[ERROR] State of user: %s after posting message is not DEFAULT.", savedUser.state);
-      }
-    });
+    // user.state = States.DEFAULT;
+    // user.save(function(err, savedUser) {
+    //   if (err) { return console.error(err); }
+    //   if (savedUser.state != States.DEFAULT) {
+    //     console.error("[ERROR] State of user: %s after posting message is not DEFAULT.", savedUser.state);
+    //   }
+    // });
   });
-  // Users.set_user_state(uid, States.DEFAULT, "posting message");
+  Users.set_user_state(uid, States.DEFAULT, "posting message");
 }
 
 function sendPostSuccess(user, post) {
