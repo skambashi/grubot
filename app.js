@@ -533,11 +533,11 @@ function newPoll(uid) {
 }
 
 function createPoll(ownerId, question) {
-  Polls.add_poll(ownerId, question, function(err, newPoll) {
+  Users.get_user(ownerId, function(err, user) {
     if (err) { console.error(err); }
-    console.log("[POLL] Poll %s created by User %s", newPoll.id, ownerId);
-    Users.get_user(ownerId, function(err, user) {
+    Polls.add_poll(user.name, question, function(err, newPoll) {
       if (err) { console.error(err); }
+      console.log("[POLL] Poll %s created by User %s", newPoll.id, ownerId);
       user.buildingPollId = newPoll.id;
       user.state = States.POLL_INPUT_CHOICE;
       user.save(function(err, savedUser) {
@@ -602,7 +602,24 @@ function publishPoll(uid) {
 }
 
 function viewPolls(uid) {
-  sendTextMessage(uid, "no u");
+  Polls.get_all_polls(function(err, polls) {
+    if (err) { console.error(err); }
+    var listItems = polls.map(function(poll) {
+      return {
+        title: poll.text,
+        subtitle: 'asked by ' + poll.owner,
+        buttons: [{
+          type: "postback",
+          title: "View poll",
+          payload: JSON.stringify({
+            type: "VIEW_POLL",
+            pollID: poll._id
+          });
+        }]
+      };
+    });
+    sendListMessage(uid, listItems, true);
+  });
 }
 
 function viewPoll(uid, pollId) {
@@ -616,7 +633,7 @@ function viewPoll(uid, pollId) {
         image_url: 'http://www.qsc.com/resource-files//productresources/spk/kla/kla181/q_spk_kla_181_img_pole2.png',
         buttons: [{
           type: "postback",
-          title: "Delete",
+          title: "Delete poll",
           payload: JSON.stringify({
             type: "DELETE_POLL",
             pollID: poll._id // check this
