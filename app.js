@@ -541,7 +541,7 @@ function newPoll(uid) {
 }
 
 function createPoll(ownerId, question) {
-  Polls.add_poll(owner, question, function(err, newPoll) {
+  Polls.add_poll(ownerId, question, function(err, newPoll) {
     if (err) { console.error(err); }
     console.log("[POLL] Poll %s created by User %s", newPoll.id, ownerId);
     Users.get_user(ownerId, function(err, user) {
