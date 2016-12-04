@@ -613,6 +613,7 @@ function viewPoll(uid, pollId) {
       var pollItem = [{
         title: poll.text,
         subtitle: 'asked by ' + poll.owner,
+        image_url: 'http://www.qsc.com/resource-files//productresources/spk/kla/kla181/q_spk_kla_181_img_pole2.png',
         buttons: [{
           type: "postback",
           title: "Delete",
