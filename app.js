@@ -284,11 +284,9 @@ function receivedMessage(event) {
       } else if (messageAttachments) { // IF NON-TEXT MESSAGE
         sendTextMessageChannel(senderID, user.name + ":");
         for (var i = 0; i < messageAttachments.length; i++) {
-            msgPayload = messageAttachments[i].payload;
+            var msgPayload = messageAttachments[i].payload;
             if (msgPayload.sticker_id) {
-              msgPayload = {
-                url: msgPayload.url
-              }
+              msgPayload = { url: msgPayload.url }
             }
             sendAttachmentMessageChannel(senderID, messageAttachments[i].type, msgPayload)
         }
