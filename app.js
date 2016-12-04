@@ -30,8 +30,7 @@ app.use(express.static('public'));
 //==============================================================================
 // DATABASE
 //==============================================================================
-var mongoose = require('mongoose'),
-  autoIncrement = require('mongoose-auto-increment');
+var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
 var db = mongoose.connection;
@@ -40,7 +39,6 @@ db.once('open', function() {
   // we're connected!
   console.log("[DB] Successfully connected to database.");
 });
-autoIncrement.initialize(db);
 
 var Users = require('./models/user.js');
 var Posts = require('./models/post.js');
@@ -503,7 +501,7 @@ function viewPosts(uid) {
           type: "postback",
           payload: JSON.stringify({
             type: "DELETE_POST",
-            postID: post.id
+            postID: post._id
           })
         }]
       };
