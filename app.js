@@ -225,8 +225,8 @@ function receivedMessage(event) {
   var message = event.message;
 
   // Received message for user senderID and page recipientID at time = timeOfMessage // log(JSON.stringify(message))
-  console.log("[RECEIVED_MESSAGE] USER_ID: %d | MID: %s | TEXT: %s", senderID, message.mid, message.text);
-
+  console.log("[RECEIVED_MESSAGE] USER_ID: %d | MID: %s", senderID, message.mid);
+  console.log(JSON.stringify(message));
   var isEcho = message.is_echo;
   var messageId = message.mid;
   var appId = message.app_id;
