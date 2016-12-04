@@ -248,8 +248,19 @@ function receivedMessage(event) {
           // If we receive a text message, check to see if it matches any special
           // keywords and send back the corresponding example. Otherwise, just echo
           // the text we received.
+          case States.POLL_INPUT_CONTINUE:
+            switch (messageText) {
+              case 'Another one':
+                continuePollInput(senderID);
+                break;
+              case 'Publish poll':
+                publishPoll(senderID);
+                break;
+            }
+            break;
           case States.POLL_INPUT_CHOICE:
             createChoice(senderID, messageText);
+            break;
           case States.POLL_INPUT_QUESTION:
             createPoll(senderID, messageText);
             break;
@@ -431,13 +442,20 @@ function postMessage(uid, message) {
   console.log("[POST] Attempting to create post '%s' from User %s", message, uid);
   Users.get_user(uid, function(err, user) {
     if (err) { return console.error(err); }
-    Posts.add_post(user.name, message, function(err, newPost) {
-      if (err) { return console.error(err); }
-      console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
-      sendPostSuccess(user, newPost.text);
+    user.state = States.DEFAULT;
+    user.save(function(err, savedUser) {
+      if (err) { console.error(err); }
+      if (savedUser.state != States.DEFAULT) {
+        console.error("[ERROR] State of user: %s after posting message is not DEFAULT", savedUser.state);
+      }
+      Posts.add_post(savedUser.name, message, function(err, newPost) {
+        if (err) { return console.error(err); }
+        console.log("[POST] Added Post by User %s: '%s'", uid, newPost.text);
+        sendPostSuccess(savedUser, newPost.text);
+      });
     });
   });
-  Users.set_user_state(uid, States.DEFAULT, "posting message");
+  // Users.set_user_state(uid, States.DEFAULT, "posting message");
 }
 
 function sendPostSuccess(user, post) {
@@ -536,7 +554,32 @@ function createPoll(ownerId, question) {
 }
 
 function createChoice(uid, choice) {
-  console.log("[POLL] Choice created by User %s", uid);
+  Users.get_user(uid, function(err, user) {
+    if (err) { return console.error(err); }
+    Polls.add_choice(choice, user.buildingPollId, function(err, newChoice) {
+      if (err) { return console.error(err); }
+      console.log("[POLL] Choice %s created by User %s", newChoice.id, uid);
+      user.state = States.POLL_INPUT_CONTINUE;
+      user.save(function(err, savedUser) {
+        if (err) { return console.error(err); }
+          // advance user after state is set
+          var replies = [{
+            "content_type": "text",
+            "title": "Publish poll",
+            "payload": ""
+          }, {
+            "content_type": "text",
+            "title": "Another one",
+            "payload": ""
+          }];
+          sendQuickReply(uid, "Want to add another choice?", replies);
+      });
+    });
+  });
+}
+
+function continuePollInput(uid) {
+  // Users.get_user()
 }
 
 function sendHelpMessage(uid) {
