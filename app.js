@@ -272,6 +272,11 @@ function receivedMessage(event) {
               case 'Start poll':
               case 'start poll':
                 promptBuildPoll(senderID);
+                break;
+              case 'Help':
+              case 'help':
+                sendHelpMessage(senderID);
+                break;
               default:
                 // sendTextMessage(senderID, messageText);
                 sendTextMessageChannel(senderID, user.name + ": " + messageText);
@@ -550,6 +555,14 @@ function promptBuildPoll(uid) {
       }
     });
   });
+}
+
+function sendHelpMessage(uid) {
+  console.log("[HELP] sending Help menu to user %s", uid);
+  sendTextMessage(uid, "'Pin post': pin a message for everyone to see\n" +
+                        "'View posts': view pinned messages\n" +
+                        "'Subscribe': receive updates from Grubot\n" +
+                        "'Unsubscribe': stop receiving updates");
 }
 
 /*
