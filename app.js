@@ -381,6 +381,10 @@ function receivedPostback(event) {
       break;
     case "VIEW_POLL":
       viewPoll(senderID, payload.pollID);
+      break;
+    case "DELETE_POLL":
+      deletePoll(senderID, payload.pollID);
+      break;
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d", senderID, recipientID, payload.type, timeOfPostback);
@@ -705,6 +709,12 @@ function viewPoll(uid, pollId) {
   });
 }
 
+function deletePoll(uid, pollID) {
+  Polls.remove_poll(pollID, function(err) {
+    if (err) { console.error(err); }
+    console.log('[POLL] Poll %s was deleted by user %s', pollID, uid);
+  });
+}
 
 function sendHelpMessage(uid) {
   console.log("[HELP] sending Help menu to user %s", uid);
