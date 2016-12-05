@@ -713,6 +713,7 @@ function deletePoll(uid, pollID) {
   Polls.remove_poll(pollID, function(err) {
     if (err) { console.error(err); }
     console.log('[POLL] Poll %s was deleted by user %s', pollID, uid);
+    sendTextMessage(uid, 'Poll successfully deleted.');
   });
 }
 
