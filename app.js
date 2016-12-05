@@ -373,8 +373,8 @@ function receivedPostback(event) {
   switch (payload.type) {
     case "NEW_USER":
       registerUser(senderID);
-      sendTextMessage(senderID, "Hi! I'm Grubot, your group chat assistant - " +
-        "What can I do for you?");
+      sendTextMessage(senderID, "Hi, I'm Grubot, your group chat assistant - " +
+        "What can I do for you? Type 'help' for a list of commands!");
       break;
     case "DELETE_POST":
       deletePost(senderID, payload.postID);
