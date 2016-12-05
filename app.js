@@ -386,7 +386,7 @@ function receivedPostback(event) {
       deletePoll(senderID, payload.pollId);
       break;
     case "CAST_VOTE":
-      castVote(senderID, payload.pollId, payload.choiceId);
+      castVote(senderID, payload.choiceId, payload.pollId);
       break;
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
