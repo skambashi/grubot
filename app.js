@@ -380,10 +380,13 @@ function receivedPostback(event) {
       deletePost(senderID, payload.postID);
       break;
     case "VIEW_POLL":
-      viewPoll(senderID, payload.pollID);
+      viewPoll(senderID, payload.pollId);
       break;
     case "DELETE_POLL":
-      deletePoll(senderID, payload.pollID);
+      deletePoll(senderID, payload.pollId);
+      break;
+    case "CAST_VOTE":
+      castVote(senderID, payload.pollId, payload.choiceId);
       break;
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
@@ -621,7 +624,7 @@ function viewPolls(uid) {
           title: "View poll",
           payload: JSON.stringify({
             type: "VIEW_POLL",
-            pollID: poll.id
+            pollId: poll.id
           })
         }]
       };
@@ -634,7 +637,7 @@ function viewPolls(uid) {
         title: "View poll",
         payload: JSON.stringify({
           type: "VIEW_POLL",
-          pollID: polls[0].id
+          pollId: polls[0].id
         })
       }];
       var elements = [{
@@ -671,7 +674,7 @@ function viewPoll(uid, pollId) {
           title: "Delete poll",
           payload: JSON.stringify({
             type: "DELETE_POLL",
-            pollID: poll.id // check this
+            pollId: poll.id // check this
           })
         }]
       }];
@@ -682,9 +685,9 @@ function viewPoll(uid, pollId) {
             type: "postback",
             title: "Vote",
             payload: JSON.stringify({
-              type: "POLL_VOTE",
-              pollID: poll.id, // check this
-              choiceID: choice.id // check this
+              type: "CAST_VOTE",
+              pollId: poll.id, // check this
+              choiceId: choice.id // check this
             })
           }]
         };
@@ -709,11 +712,19 @@ function viewPoll(uid, pollId) {
   });
 }
 
-function deletePoll(uid, pollID) {
-  Polls.remove_poll(pollID, function(err) {
+function deletePoll(uid, pollId) {
+  Polls.remove_poll(pollId, function(err) {
     if (err) { console.error(err); }
-    console.log('[POLL] Poll %s was deleted by user %s', pollID, uid);
+    console.log('[POLL] Poll %s was deleted by user %s', pollId, uid);
     sendTextMessage(uid, 'Poll successfully deleted.');
+  });
+}
+
+// TODO: error checking, bounds checking
+function castVote(uid, choiceId, pollId) {
+  Polls.add_vote(uid, choiceId, pollId, function(err, newVote) {
+    if (err) { console.error(err); }
+    console.log('[POLL] Vote %s cast by User %s for Choice %s on Poll %s', newVote.id, uid, choiceId, pollId);
   });
 }
 

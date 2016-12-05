@@ -19,6 +19,7 @@ var pollSchema = mongoose.Schema({
 
 var Poll = mongoose.model('Poll', pollSchema);
 var Choice = mongoose.model('Choice', choiceSchema);
+var Vote = mongoose.model('Vote', voteSchema);
 
 exports.add_poll = function(pollOwner, pollQuestion, callback) {
   // callback signature for add_poll : function(err, newPoll)
@@ -54,4 +55,19 @@ exports.add_choice = function(choiceName, pollId, callback) {
 exports.get_poll_choices = function(pollId, callback) {
   // callback signature for get_poll_choices: function(err, choices)
   Choice.find({ poll_id: pollId }, callback);
+};
+
+exports.add_vote = function(uid, choiceId, pollId, callback) {
+  // callback signature for add_vote: function(err, newVote)
+  var newVote = new Vote({
+    user_id: uid,
+    choice_id: choiceId,
+    poll_id: pollId
+  });
+  newVote.save(callback);
+};
+
+exports.get_votes_for_choice = function(choiceId, callback) {
+  // callback signature for get_votes_for_choice: function(err, choices)
+  Vote.find({ choice_id: choiceId }, callback);
 };
