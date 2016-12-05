@@ -1,0 +1,36 @@
+curl -X POST -H "Content-Type: application/json" -d '{
+  "setting_type" : "call_to_actions",
+  "thread_state" : "existing_thread",
+  "call_to_actions":[
+    {
+      "type":"postback",
+      "title":"Pin Post",
+      "payload":"MENU_PIN_POST"
+    },
+    {
+      "type":"postback",
+      "title":"View Posts",
+      "payload":"MENU_VIEW_POSTS"
+    },
+    {
+      "type":"postback",
+      "title":"Start Poll",
+      "payload":"MENU_START_POLL"
+    },
+    {
+      "type":"postback",
+      "title":"View Polls",
+      "payload":"MENU_VIEW_POLLS"
+    },
+    {
+      "type":"postback",
+      "title":"Help",
+      "payload":"MENU_HELP"
+    }
+  ]
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAACTxEthnq0BAApwrs5tzLxKVTIw5HzxtV3SulrIMGei2YZApe3qQAbznEByHNFOZC1Lm1bGcVmimQY5sE4nFVHl48atP7KtRVtuMVilyJkeBxKz3hkHmNGpRJyDOYYwZBfhXRHFo6QNDbKyIVWUrZCyfXnfXwp3qhu1yoVNhQZDZD"
+
+curl -X DELETE -H "Content-Type: application/json" -d '{
+  "setting_type":"call_to_actions",
+  "thread_state":"existing_thread"
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAACTxEthnq0BAApwrs5tzLxKVTIw5HzxtV3SulrIMGei2YZApe3qQAbznEByHNFOZC1Lm1bGcVmimQY5sE4nFVHl48atP7KtRVtuMVilyJkeBxKz3hkHmNGpRJyDOYYwZBfhXRHFo6QNDbKyIVWUrZCyfXnfXwp3qhu1yoVNhQZDZD"

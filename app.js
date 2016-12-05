@@ -367,34 +367,53 @@ function receivedPostback(event) {
 
   // The 'payload' param is a developer-defined field which is set in a postback
   // button for Structured Messages.
-  var payload = JSON.parse(event.postback.payload);
-  console.log("[POSTBACK] Received postback | type: %s.", payload.type);
 
-  switch (payload.type) {
-    case "NEW_USER":
-      registerUser(senderID);
-      sendTextMessage(senderID, "Hi, I'm Grubot, your group chat assistant - " +
-        "What can I do for you? Type 'help' for a list of commands!");
+  switch (event.postback.payload) {
+    case "MENU_PIN_POST":
+      newPost(senderID);
       break;
-    case "DELETE_POST":
-      deletePost(senderID, payload.postID);
+    case "MENU_VIEW_POSTS":
+      viewPosts(senderID);
       break;
-    case "VIEW_POLL":
-      viewPoll(senderID, payload.pollId);
+    case "MENU_START_POLL":
+      newPoll(senderID);
       break;
-    case "DELETE_POLL":
-      deletePoll(senderID, payload.pollId);
+    case "MENU_VIEW_POLLS":
+      viewPolls(senderID);
       break;
-    case "CAST_VOTE":
-      castVote(senderID, payload.choiceId, payload.pollId);
+    case "MENU_HELP":
+      sendHelpMessage(senderID);
       break;
     default:
-      console.log("Received postback for user %d and page %d with payload '%s' " +
-        "at %d", senderID, recipientID, payload.type, timeOfPostback);
-      // When a postback is called, we'll send a message back to the sender to
-      // let them know it was successful
-      sendTextMessage(senderID, "Postback called");
-      break;
+      var payload = JSON.parse(event.postback.payload);
+      console.log("[POSTBACK] Received postback | type: %s.", payload.type);
+
+      switch (payload.type) {
+        case "NEW_USER":
+          registerUser(senderID);
+          sendTextMessage(senderID, "Hi, I'm Grubot, your group chat assistant - " +
+            "What can I do for you? Type 'help' for a list of commands!");
+          break;
+        case "DELETE_POST":
+          deletePost(senderID, payload.postID);
+          break;
+        case "VIEW_POLL":
+          viewPoll(senderID, payload.pollId);
+          break;
+        case "DELETE_POLL":
+          deletePoll(senderID, payload.pollId);
+          break;
+        case "CAST_VOTE":
+          castVote(senderID, payload.choiceId, payload.pollId);
+          break;
+        default:
+          console.log("Received postback for user %d and page %d with payload '%s' " +
+            "at %d", senderID, recipientID, payload.type, timeOfPostback);
+          // When a postback is called, we'll send a message back to the sender to
+          // let them know it was successful
+          sendTextMessage(senderID, "Postback called");
+          break;
+      }
   }
 }
 
