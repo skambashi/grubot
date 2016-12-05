@@ -509,10 +509,13 @@ function viewPosts(uid) {
           }]
         };
       });
-      if (listItems.length > 4) {
-        sendListMessage(uid, listItems.slice(-4), true);
-      } else {
-        sendListMessage(uid, listItems, true);
+      while (true) {
+        if (listItems.length > 4) {
+          sendListMessage(uid, listItems.slice(0, 4), true);
+          listItems = listItems.slice(4);
+        } else {
+          sendListMessage(uid, listItems, true);
+        }
       }
     }
   });
