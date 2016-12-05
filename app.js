@@ -692,11 +692,14 @@ function viewPoll(uid, pollId) {
           sendListMessage(uid, listItems.slice(0, 4), !isFirst);
           listItems = listItems.slice(4);
         } else {
-          sendListMessage(uid, listItems, !isFirst);
+          if (listItems.length === 1) {
+            sendGenericMessage(uid, listItems);
+          } else {
+            sendListMessage(uid, listItems, !isFirst);
+          }
           return;
         }
         isFirst = false;
-        setTimeout(function(){}, 200);
       }
     });
   });
@@ -708,6 +711,7 @@ function sendHelpMessage(uid) {
   sendTextMessage(uid, "'Pin post': pin a message for everyone to see\n" +
                         "'View posts': view pinned messages\n" +
                         "'Start poll': create a new poll\n" +
+                        "'View polls': view all polls\n" +
                         "'Subscribe': receive updates from Grubot\n" +
                         "'Unsubscribe': stop receiving updates");
 }
