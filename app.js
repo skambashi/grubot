@@ -515,6 +515,7 @@ function viewPosts(uid) {
           listItems = listItems.slice(4);
         } else {
           sendListMessage(uid, listItems, true);
+          return;
         }
       }
     }
@@ -594,7 +595,6 @@ function publishPoll(uid) {
     }];
     var pollId = user.buildingPollId;
     sendTextMessage(uid, "Your poll is live!");
-    // viewPolls(uid);
     viewPoll(uid, pollId);
     sendQuickReplyChannel(uid, user.name + " just published a poll!", viewPollsOption);
     user.buildingPollId = "";
@@ -685,8 +685,15 @@ function viewPoll(uid, pollId) {
         };
       });
       var listItems = pollItem.concat(choiceItems);
-
-      sendListMessage(uid, listItems);
+      while (true) {
+        if (listItems.length > 4) {
+          sendListMessage(uid, listItems.slice(0, 4));
+          listItems = listItems.slice(4);
+        } else {
+          sendListMessage(uid, listItems);
+          return;
+        }
+      }
     });
   });
 }
