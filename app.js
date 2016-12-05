@@ -669,7 +669,6 @@ function viewPolls(uid) {
 }
 
 function viewPoll(uid, pollId) {
-  console.log("[DEBUG] checking poll id: %s", pollId);
   Polls.get_poll(pollId, function(err, poll) {
     if (err) { console.error(err); }
     Polls.get_poll_choices(pollId, function(err, choices) {
@@ -728,7 +727,7 @@ function deletePoll(uid, pollId) {
   });
 }
 
-// TODO: error checking, bounds checking
+// TODO: error checking, bounds checking, rendering vote data
 function castVote(uid, choiceId, pollId) {
   Polls.add_vote(uid, choiceId, pollId, function(err, newVote) {
     if (err) { console.error(err); }

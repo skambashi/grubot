@@ -68,6 +68,11 @@ exports.add_vote = function(uid, choiceId, pollId, callback) {
 };
 
 exports.get_votes_for_choice = function(choiceId, callback) {
-  // callback signature for get_votes_for_choice: function(err, choices)
+  // callback signature for get_votes_for_choice: function(err, votes)
   Vote.find({ choice_id: choiceId }, callback);
+};
+
+exports.get_votes_for_poll = function(pollId, callback) {
+  // callback signature for get_votes_for_choice: function(err, votes)
+  Vote.find({ poll_id: pollId }, callback);
 };
