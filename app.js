@@ -696,6 +696,7 @@ function viewPoll(uid, pollId) {
           return;
         }
         isFirst = false;
+        setTimeout(function(){}, 50);
       }
     });
   });
