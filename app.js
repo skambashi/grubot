@@ -379,7 +379,8 @@ function receivedPostback(event) {
     case "DELETE_POST":
       deletePost(senderID, payload.postID);
       break;
-
+    case "VIEW_POLL":
+      viewPoll(senderID, payload.pollID);
     default:
       console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d", senderID, recipientID, payload.type, timeOfPostback);
@@ -685,14 +686,16 @@ function viewPoll(uid, pollId) {
         };
       });
       var listItems = pollItem.concat(choiceItems);
+      var isFirst = true;
       while (true) {
         if (listItems.length > 4) {
-          sendListMessage(uid, listItems.slice(0, 4));
+          sendListMessage(uid, listItems.slice(0, 4), !isFirst);
           listItems = listItems.slice(4);
         } else {
-          sendListMessage(uid, listItems);
+          sendListMessage(uid, listItems, !isFirst);
           return;
         }
+        isFirst = false;
       }
     });
   });
