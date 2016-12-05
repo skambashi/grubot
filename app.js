@@ -522,7 +522,11 @@ function viewPosts(uid) {
           sendListMessage(uid, listItems.slice(0, 4), true);
           listItems = listItems.slice(4);
         } else {
-          sendListMessage(uid, listItems, true);
+          if (listItems.length === 1) {
+            sendGenericMessage(uid, listItems);
+          } else {
+            sendListMessage(uid, listItems, true);
+          }
           return;
         }
       }
@@ -652,7 +656,11 @@ function viewPolls(uid) {
           sendListMessage(uid, listItems.slice(0, 4), true);
           listItems = listItems.slice(4);
         } else {
-          sendListMessage(uid, listItems, true);
+          if (listItems.length === 1) {
+            sendGenericMessage(uid, listItems);
+          } else {
+            sendListMessage(uid, listItems, true);
+          }
           return;
         }
       }
